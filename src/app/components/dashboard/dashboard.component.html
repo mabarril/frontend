@@ -3,15 +3,15 @@
     <mat-icon>admin_panel_settings</mat-icon>
     Administração ECC
   </span>
-  
+
   <span class="spacer"></span>
-  
+
   <button mat-button [matMenuTriggerFor]="userMenu">
     <mat-icon>account_circle</mat-icon>
     {{ getCurrentUser()?.nome }}
     <mat-icon>arrow_drop_down</mat-icon>
   </button>
-  
+
   <mat-menu #userMenu="matMenu">
     <button mat-menu-item (click)="logout()">
       <mat-icon>logout</mat-icon>
@@ -22,82 +22,55 @@
 
 <div class="dashboard-container">
   <div class="dashboard-content">
-    
-    <!-- Seção de Envio de Convites -->
-    <mat-card class="convite-card">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>mail</mat-icon>
-          Enviar Convite para Convidado
-        </mat-card-title>
-        <mat-card-subtitle>
-          Gere e envie um link único para que um casal se inscreva como convidado
-        </mat-card-subtitle>
-      </mat-card-header>
+    <h1>Bem-vindo ao Painel de Administração</h1>
+    <p>Gerencie casais, eventos e convites de forma eficiente.</p>
 
-      <mat-card-content>
-        <form [formGroup]="conviteForm" (ngSubmit)="enviarConvite()">
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Selecionar Casal</mat-label>
-              <mat-select formControlName="casal_id">
-                <mat-option *ngFor="let casal of listaCasais" [value]="casal.id">
-                  {{ casal.nome_esposo}} e {{ casal.nome_esposa }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="conviteForm.get('casal_id')?.invalid && conviteForm.get('casal_id')?.touched">
-                Selecione um casal
-              </mat-error>
-            </mat-form-field>
-          </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Selecionar Evento</mat-label>
-              <mat-select formControlName="evento_id">
-                <mat-option *ngFor="let evento of eventos" [value]="evento.id">
-                  {{ evento.nome }} - {{ evento.data_inicio | date:'dd/MM/yyyy' }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="conviteForm.get('evento_id')?.invalid && conviteForm.get('evento_id')?.touched">
-                Selecione um evento
-              </mat-error>
-            </mat-form-field>
-          </div>
+    <div class="board">
+      <div class="row">
+        <div class="col">
+          <mat-card class="card">
+            <mat-card-header>
+              <mat-card-title>Convidar Afilhado</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email de Destino</mat-label>
-              <input matInput type="email" formControlName="email_destino" 
-                     placeholder="email@exemplo.com">
-              <mat-icon matSuffix>email</mat-icon>
-              <mat-error *ngIf="conviteForm.get('email_destino')?.invalid && conviteForm.get('email_destino')?.touched">
-                <span *ngIf="conviteForm.get('email_destino')?.hasError('required')">Email é obrigatório</span>
-                <span *ngIf="conviteForm.get('email_destino')?.hasError('email')">Email inválido</span>
-              </mat-error>
-            </mat-form-field>
-          </div>
+        <div class="col">
+          <mat-card class="card">
+            <mat-card-header>
+              <mat-card-title>Convidar Afilhado</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
+            </mat-card-actions>
+          </mat-card>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mensagem Personalizada (Opcional)</mat-label>
-              <textarea matInput formControlName="mensagem_personalizada" 
-                        rows="3" placeholder="Digite uma mensagem personalizada para o convite..."></textarea>
-            </mat-form-field>
-          </div>
+        </div>
+        <div class="col">
+          <mat-card class="card">
+            <mat-card-header>
+              <mat-card-title>Convidar Afilhado</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
 
-          <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" 
-                    [disabled]="conviteForm.invalid || enviandoConvite">
-              <mat-spinner diameter="20" *ngIf="enviandoConvite"></mat-spinner>
-              <mat-icon *ngIf="!enviandoConvite">send</mat-icon>
-              <span *ngIf="!enviandoConvite">Enviar Convite</span>
-              <span *ngIf="enviandoConvite">Enviando...</span>
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
+    </div>
+
+
 
     <!-- Seção de Estatísticas (placeholder) -->
     <div class="stats-section">
@@ -134,4 +107,3 @@
   <mat-spinner diameter="50"></mat-spinner>
   <p>Carregando dados...</p>
 </div>
-
