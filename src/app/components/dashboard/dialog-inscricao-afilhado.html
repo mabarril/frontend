@@ -40,10 +40,10 @@
             </mat-form-field>
           </div>
 
-        <div *ngIf="urlCompleta" class="url-inscricao-exibida">
+        <div [hidden]="!urlCompleta" class="url-inscricao-exibida">
           <mat-card class="mat-elevation-z2" style="margin-top: 16px;">
             <mat-card-content>
-              <a [href]="urlCompleta" target="_blank">
+              <a [href]="conviteForm.get('url_convite')" target="_blank">
                 URL do Convite
               </a>
             </mat-card-content>

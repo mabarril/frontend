@@ -194,7 +194,7 @@ export class DialogConviteAfilhado {
   readonly data = inject<{ casais: Casal[], eventos: Evento[] }>(MAT_DIALOG_DATA);
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
-  urlCompleta = '';
+  urlCompleta = false;
 
   casalAtual: Casal | undefined;
   loading = false;
@@ -208,9 +208,10 @@ export class DialogConviteAfilhado {
           next: (response: any) => {
             this.enviandoConvite = false;
             this.conviteForm.value.url_inscricao = response.data.urlCompleta;
-            this.urlCompleta = response.data.urlCompleta;
-            
-            if (response && response.data && response.data[0]) {
+
+
+            if (response) {
+              this.urlCompleta = true;
               this.snackBar.open('URL de convite gerada com sucesso!', 'Fechar', {
                 duration: 5000,
                 panelClass: ['success-snackbar']
