@@ -1,2 +1,25 @@
-<router-outlet></router-outlet>
+<mat-toolbar color="primary" *ngIf="getCurrentUser()">
+  <span>
+    <mat-icon>admin_panel_settings</mat-icon>
+    Administração ECC
+  </span>
+
+  <span class="spacer"></span>
+
+  <button mat-button [matMenuTriggerFor]="userMenu">
+    <mat-icon>account_circle</mat-icon>
+    {{ getCurrentUser()?.nome }}
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Sair
+    </button>
+  </mat-menu>
+</mat-toolbar>
+<div class="container">
+  <router-outlet></router-outlet>
+</div>
 
