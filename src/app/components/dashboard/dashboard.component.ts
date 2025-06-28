@@ -19,17 +19,6 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { CasaisService } from '../../services/casais.service';
 import { EventosService } from '../../services/eventos.service';
-import { UrlsUnicasService } from '../../services/urls-unicas.service';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-  MatDialogTitle,
-  MatDialogContent,
-  MatDialogActions,
-  MatDialogClose,
-} from '@angular/material/dialog';
-
 
 interface Casal {
   id: number;
@@ -67,7 +56,7 @@ interface Evento {
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  readonly dialog = inject(MatDialog);
+
   listaCasais!: any;
   eventos: any;
   loading = false;
@@ -75,7 +64,6 @@ export class DashboardComponent implements OnInit {
   constructor(
     private casaisService: CasaisService,
     private eventosService: EventosService,
-    private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar,
   ) { }
@@ -135,18 +123,10 @@ export class DashboardComponent implements OnInit {
     console.log('lista', this.listaCasais)
   }
 
-
-  logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: () => {
-        // Mesmo com erro, fazer logout local
-        this.router.navigate(['/login']);
-      }
-    });
+  openListaInscricao() {
+    this.router.navigate(['/lista-incricao']);
   }
+<<<<<<< HEAD
 
   getCurrentUser() {
     return this.authService.getCurrentUser();
@@ -232,4 +212,6 @@ export class DialogConviteAfilhado {
     }
   }
 
+=======
+>>>>>>> 55969e4 (lista-convidado)
 }
