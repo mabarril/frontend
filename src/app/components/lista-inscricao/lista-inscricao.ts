@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -11,6 +11,10 @@ import { UrlsUnicasService } from '../../services/urls-unicas.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSpinner } from '@angular/material/progress-spinner';
+import { MatLabel } from '@angular/material/form-field';
+
+import { CasaisService } from '../../services/casais.service';
+import { EventosService } from '../../services/eventos.service';
 
 interface Casal {
   id: number;
@@ -29,17 +33,66 @@ interface Evento {
 @Component({
   selector: 'app-lista-inscricao',
   imports: [
-    MatCardModule
+    MatCardModule, MatLabel, MatFormFieldModule, MatSelectModule,CommonModule, MatButtonModule
   ],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
 })
 
-export class ListaInscricao {
+export class ListaInscricao implements OnInit {
   readonly dialog = inject(MatDialog);
   listaCasais!: any;
   eventos: any;
   loading = false;
+
+
+  constructor(
+    private casaisService: CasaisService,
+    private eventosService: EventosService,
+
+    private snackBar: MatSnackBar,
+  ) { }
+
+
+
+  ngOnInit(): void {
+
+    this.carregarDados();
+  }
+
+  carregarDados(): void {
+    this.loading = true;
+
+    // Carregar casais
+    this.casaisService.getCasais().subscribe({
+      next: (response) => {
+        this.carregaListaCasais(response);
+
+      },
+      error: (error) => {
+        console.error('Erro ao carregar casais:', error);
+        this.snackBar.open('Erro ao carregar casais', 'Fechar', { duration: 3000 });
+      }
+
+    });
+
+    // Carregar eventos
+    this.eventosService.getEventos().subscribe({
+      next: (response) => {
+        this.eventos = response || [];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar eventos:', error);
+        this.snackBar.open('Erro ao carregar eventos', 'Fechar', { duration: 3000 });
+        this.loading = false;
+      }
+    });
+  }
+
+
+
+
   openDialogInscricaoAfilhado(enterAnimationDuration: string, exitAnimationDuration: string): void {
 
     const dialogRef = this.dialog.open(DialogConviteAfilhado,
@@ -51,13 +104,35 @@ export class ListaInscricao {
       });
   }
 
+  carregaListaCasais(casais: any): void {
+    this.listaCasais = [];
+    casais.forEach((casal: any) => {
+      let casalAtual: Casal = {
+        id: casal.id,
+        nome_esposo: '',
+        nome_esposa: '',
+        email_contato: ''
+      };
+      casal.pessoas.forEach((pessoa: any) => {
+        if (pessoa.tipo === 'esposo') {
+          casalAtual.nome_esposo = pessoa.nome_social;
+        } else if (pessoa.tipo === 'esposa') {
+          casalAtual.nome_esposa = pessoa.nome_social;
+        }
+      });
+      this.listaCasais.push(casalAtual);
+    });
+    console.log('lista', this.listaCasais)
+
+  }
+
 }
 
 @Component({
   selector: 'dialog-inscricao-afilhado',
   templateUrl: 'dialog-inscricao-afilhado.html',
   styleUrls: ['./lista-inscricao.scss'],
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 

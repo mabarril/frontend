@@ -26,19 +26,6 @@
             </mat-form-field>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Selecionar Evento</mat-label>
-              <mat-select formControlName="evento_id">
-                <mat-option *ngFor="let evento of eventos" [value]="evento.id">
-                  {{ evento.nome }} - {{ evento.data_inicio | date:'dd/MM/yyyy' }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="conviteForm.get('evento_id')?.invalid && conviteForm.get('evento_id')?.touched">
-                Selecione um evento
-              </mat-error>
-            </mat-form-field>
-          </div>
 
         <div [hidden]="!urlCompleta" class="url-inscricao-exibida">
           <mat-card class="mat-elevation-z2" style="margin-top: 16px;">
