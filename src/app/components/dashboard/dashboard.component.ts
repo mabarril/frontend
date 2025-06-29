@@ -61,15 +61,15 @@ export class DashboardComponent implements OnInit {
   eventos: any;
   loading = false;
 
-    constructor(
-            private casaisService: CasaisService,
-                        private eventosService: EventosService,
-                                        private router: Router,
-                                                            private snackBar: MatSnackBar,
-                                                                                  ) { }
+  constructor(
+    private casaisService: CasaisService,
+    private eventosService: EventosService,
+    private router: Router,
+    private snackBar: MatSnackBar,
+  ) { }
 
-                                                                                                         
-   ngOnInit(): void {
+
+  ngOnInit(): void {
     this.carregarDados();
   }
 

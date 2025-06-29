@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 })
 export class EventosService {
 
-    private apiUrl = '/api';
+  private apiUrl = '/api';
   constructor(private http: HttpClient) { }
 
   getEventos() {

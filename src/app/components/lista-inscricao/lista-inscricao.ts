@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,9 +12,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSpinner } from '@angular/material/progress-spinner';
 import { MatLabel } from '@angular/material/form-field';
-
+import { MatTableModule } from '@angular/material/table';
 import { CasaisService } from '../../services/casais.service';
 import { EventosService } from '../../services/eventos.service';
+import { InscricoesService } from '../../services/inscricoes.service';
 
 interface Casal {
   id: number;
@@ -30,34 +31,126 @@ interface Evento {
   data_fim: string;
 }
 
+interface Inscricao {
+  id: number;
+  casal_id: number;
+  evento_id: number;
+  status: string;
+  data_inscricao: string;
+  tipo_participante: string;
+}
+
 @Component({
   selector: 'app-lista-inscricao',
   imports: [
-    MatCardModule, MatLabel, MatFormFieldModule, MatSelectModule,CommonModule, MatButtonModule
+    MatCardModule,
+    MatLabel,
+    MatFormFieldModule,
+    MatSelectModule,
+    CommonModule,
+    MatButtonModule,
+    MatTableModule,
+    MatInputModule,
+    MatIconModule
+
   ],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
 })
 
 export class ListaInscricao implements OnInit {
+  urlCompleta: any;
+
+  openDialogInscricao(arg0: any) {
+    throw new Error('Method not implemented.');
+  }
   readonly dialog = inject(MatDialog);
   listaCasais!: any;
   eventos: any;
   loading = false;
+  eventoSelecionado: number | null = null;
+  inscricoes: Inscricao[] = [];
+  listaInscritos: any[] = [];
+  listaInscritosOriginal: any[] = []; // Adicione esta linha
+  displayedColumns: string[] = ['id', 'nome', 'tipo_participante', 'status', 'actions'];
 
 
   constructor(
     private casaisService: CasaisService,
     private eventosService: EventosService,
+    private inscricoesService: InscricoesService,
+    private urlsUnicasService: UrlsUnicasService,
 
     private snackBar: MatSnackBar,
   ) { }
 
-
-
   ngOnInit(): void {
-
     this.carregarDados();
+  }
+
+  onEventoChange() {
+    console.log('Evento selecionado:', this.eventoSelecionado);
+    this.listaInscritos = [];
+    if (!this.eventoSelecionado) {
+      return;
+    }
+    this.inscricoesService.getInscricoesDoEvento(this.eventoSelecionado).subscribe({
+      next: (response) => {
+        this.inscricoes = (response as Inscricao[]) || [];
+        this.listaInscritos = [];
+        this.inscricoes.forEach((inscricao: Inscricao) => {
+          const casal = this.listaCasais.find((c: Casal) => c.id === inscricao.casal_id);
+          const registro: any = {};
+          registro['id'] = inscricao.id;
+          registro['casal_id'] = inscricao.casal_id;
+          registro['evento_id'] = inscricao.evento_id;
+          registro['status'] = inscricao.status;
+          registro['data_inscricao'] = inscricao.data_inscricao;
+          registro['status'] = inscricao.status === 'confirmada' ? 'Confirmada' : 'Pendente';
+          registro['tipo_participante'] = inscricao.tipo_participante;
+          if (casal) {
+            registro['nome'] = `${casal.nome_esposo} e ${casal.nome_esposa}`;
+            registro['email'] = casal.email_contato;
+          } else {
+            registro['nome'] = 'Casal não encontrado';
+            registro['email'] = 'Email não disponível';
+          }
+          this.listaInscritos.push(registro);
+        });
+        this.listaInscritosOriginal = [...this.listaInscritos]; // Salva a lista original para filtro
+        console.log('Lista de inscritos:', this.listaInscritos);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar inscrições:', error);
+        this.snackBar.open('Erro ao carregar inscrições', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.listaInscritos = this.listaInscritosOriginal.filter(casal =>
+      casal.nome.toLowerCase().includes(filterValue)
+    );
+  }
+
+  deleteInscricao(inscricaoId: number) {
+    const dialogRef = this.dialog.open(DialogConfirmarExclusao);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Chame o serviço para deletar a inscrição
+        this.inscricoesService.deletarInscricao(inscricaoId).subscribe({
+          next: () => {
+            this.snackBar.open('Inscrição excluída com sucesso!', 'Fechar', { duration: 3000 });
+            this.onEventoChange(); // Atualiza a lista
+          },
+          error: () => {
+            this.snackBar.open('Erro ao excluir inscrição', 'Fechar', { duration: 3000 });
+          }
+        });
+      }
+    });
   }
 
   carregarDados(): void {
@@ -90,14 +183,10 @@ export class ListaInscricao implements OnInit {
     });
   }
 
-
-
-
   openDialogInscricaoAfilhado(enterAnimationDuration: string, exitAnimationDuration: string): void {
-
     const dialogRef = this.dialog.open(DialogConviteAfilhado,
       {
-        data: { casais: this.listaCasais, eventos: this.eventos },
+        data: { casais: this.listaCasais, eventos: this.eventoSelecionado },
         width: '500px',
         enterAnimationDuration,
         exitAnimationDuration,
@@ -126,6 +215,44 @@ export class ListaInscricao implements OnInit {
 
   }
 
+  copiarUrl(inscricao: any) {
+    this.urlsUnicasService.urlCompleta(inscricao.id).subscribe({
+      next: (response: any) => {
+        this.urlCompleta = response.urlCompleta;
+        this.copiarParaClipboard(this.urlCompleta);
+      },
+      error: (error) => {
+        console.error('Erro ao obter URL completa:', error);
+        this.snackBar.open('Erro ao obter URL completa', 'Fechar', { duration: 3000 });
+      }
+    });
+  
+    // Monte a URL completa conforme sua lógica
+    
+  }
+
+  copiarParaClipboard(texto: string) {
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(texto).then(() => {
+        this.snackBar.open('URL copiada para a área de transferência!', 'Fechar', { duration: 3000 });
+      }, () => {
+        this.snackBar.open('Falha ao copiar URL', 'Fechar', { duration: 3000 });
+      });
+    } else {
+      // Fallback para navegadores antigos
+      const textarea = document.createElement('textarea');
+      textarea.value = texto;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        this.snackBar.open('URL copiada para a área de transferência!', 'Fechar', { duration: 3000 });
+      } catch (err) {
+        this.snackBar.open('Falha ao copiar URL', 'Fechar', { duration: 3000 });
+      }
+      document.body.removeChild(textarea);
+    }
+  }
 }
 
 @Component({
@@ -145,16 +272,17 @@ export class DialogConviteAfilhado {
   ) {
     this.conviteForm = this.fb.group({
       padrinho_id: ['', Validators.required],
-      evento_id: ['', Validators.required],
+      evento_id: this.data.eventos, // Preenche com o evento selecionado
       url_inscricao: ['']
     });
   }
 
   conviteForm: FormGroup;
   readonly dialogRef = inject(MatDialogRef<DialogConviteAfilhado>);
-  readonly data = inject<{ casais: Casal[], eventos: Evento[] }>(MAT_DIALOG_DATA);
+  readonly data = inject<{ casais: Casal[], eventos: number }>(MAT_DIALOG_DATA);
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
+
   urlCompleta = '';
   casalAtual: Casal | undefined;
   loading = false;
@@ -188,5 +316,36 @@ export class DialogConviteAfilhado {
           }
         });
     }
+  }
+}
+
+
+@Component({
+  selector: 'dialog-confirmar-exclusao',
+  template: `
+    <h2 mat-dialog-title>Confirmar Exclusão</h2>
+    <mat-dialog-content>
+      Tem certeza que deseja excluir esta inscrição?
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="onCancel()">Cancelar</button>
+      <button mat-raised-button color="warn" (click)="onConfirm()">Excluir</button>
+    </mat-dialog-actions>
+  `,
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule, CommonModule],
+})
+export class DialogConfirmarExclusao {
+  constructor(
+    public dialogRef: MatDialogRef<DialogConfirmarExclusao>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
   }
 }

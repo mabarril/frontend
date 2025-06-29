@@ -8,7 +8,7 @@ export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'lista-incricao', component: ListaInscricao, canActivate: [AuthGuard] },
+  { path: 'lista-incricao', component: ListaInscricao },
   { path: '**', redirectTo: '/dashboard' }
 ];
 

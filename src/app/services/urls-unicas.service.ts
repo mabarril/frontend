@@ -23,5 +23,10 @@ export class UrlsUnicasService {
     return this.http.post(`${this.apiUrl}/urls-unicas/gerar-convite`, data, {headers: this.headers});
   }
 
+  urlCompleta(id_inscricao: number) {
+    return this.http.get(`${this.apiUrl}/urls-unicas/inscricao/${id_inscricao}`);
+  }
+
+
 
 }
