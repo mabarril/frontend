@@ -68,6 +68,7 @@ export class DashboardComponent implements OnInit {
     private snackBar: MatSnackBar,
   ) { }
 
+
   ngOnInit(): void {
     this.carregarDados();
   }
@@ -126,92 +127,4 @@ export class DashboardComponent implements OnInit {
   openListaInscricao() {
     this.router.navigate(['/lista-incricao']);
   }
-<<<<<<< HEAD
-
-  getCurrentUser() {
-    return this.authService.getCurrentUser();
-  }
-
-
-  openDialogInscricaoAfilhado(enterAnimationDuration: string, exitAnimationDuration: string): void {
-
-    const dialogRef = this.dialog.open(DialogConviteAfilhado,
-      {
-        data: { casais: this.listaCasais, eventos: this.eventos },
-        width: '500px',
-        enterAnimationDuration,
-        exitAnimationDuration,
-      });
-  }
-}
-
-@Component({
-  selector: 'dialog-inscricao-afilhado',
-  templateUrl: 'dialog-inscricao-afilhado.html',
-  styleUrls: ['./dashboard.component.scss'],
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-
-export class DialogConviteAfilhado {
-
-  constructor(
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-    private urlsUnicasService: UrlsUnicasService
-  ) {
-    this.conviteForm = this.fb.group({
-      padrinho_id: ['', Validators.required],
-      evento_id: ['', Validators.required],
-      url_inscricao: ['']
-    });
-  }
-
-
-  conviteForm: FormGroup;
-
-  readonly dialogRef = inject(MatDialogRef<DialogConviteAfilhado>);
-  readonly data = inject<{ casais: Casal[], eventos: Evento[] }>(MAT_DIALOG_DATA);
-  readonly listaCasais = this.data.casais;
-  readonly eventos = this.data.eventos;
-  urlCompleta = false;
-
-  casalAtual: Casal | undefined;
-  loading = false;
-  enviandoConvite = false;
-
-  enviarConvite(): void {
-    if (this.conviteForm.valid) {
-
-      this.urlsUnicasService.gerarConvite(this.conviteForm.value)
-        .subscribe({
-          next: (response: any) => {
-            this.enviandoConvite = false;
-            this.conviteForm.value.url_inscricao = response.data.urlCompleta;
-
-
-            if (response) {
-              this.urlCompleta = true;
-              this.snackBar.open('URL de convite gerada com sucesso!', 'Fechar', {
-                duration: 5000,
-                panelClass: ['success-snackbar']
-              });
-            }
-          },
-          error: (error) => {
-            this.enviandoConvite = false;
-            console.error('Erro ao enviar convite:', error);
-            this.snackBar.open(
-              error.error?.message || 'Erro ao enviar convite',
-              'Fechar',
-              { duration: 3000 }
-            );
-          }
-        });
-
-    }
-  }
-
-=======
->>>>>>> 55969e4 (lista-convidado)
 }

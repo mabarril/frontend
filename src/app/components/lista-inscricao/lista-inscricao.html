@@ -1,18 +1,92 @@
-<mat-card>
-    <mat-card-header>
-        <mat-card-title>
-            Título do Card
-        </mat-card-title>
-        <mat-card-subtitle>
-            Relação de Inscrições
-        </mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-        Conteúdo do card vai aqui.
-    </mat-card-content>
-    <mat-card-actions>
-        <mat-card-actions align="end">
+<div class="row">
+    <div class="col" style="flex-grow: 3;">
+        <mat-form-field appearance="outline" class="full-width col-3">
+            <mat-label>Selecionar Evento</mat-label>
+            <mat-select required [(value)]="eventoSelecionado" (valueChange)="onEventoChange()">
+                <mat-option *ngFor="let evento of eventos" [value]="evento.id">
+                    {{ evento.nome }} - {{ evento.data_inicio | date:'dd/MM/yyyy' }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="!eventoSelecionado">
+                Selecione um evento
+            </mat-error>
+        </mat-form-field>
+    </div>
+    <div class="col">
+        <div class="col">
+            <span class="text-muted">
+                <strong>Inscrições:</strong> {{ inscricoes.length }}
+            </span>
+        </div>
+        <div class="col">
             <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
-        </mat-card-actions>
-    </mat-card-actions>
-</mat-card>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela de inscrições -->
+<div *ngIf="inscricoes?.length">
+    <div class="row">
+        <h2>Inscrições do Evento</h2>
+    </div>
+    <div class="row">
+        
+        <mat-form-field class="col-3" appearance="outline">
+            <mat-label>Pesquisar Casal</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mia" #input>
+        </mat-form-field>
+    </div>
+    <div class="row">
+        <mat-card class="full-width">
+            <mat-table [dataSource]="listaInscritos" class="mat-elevation-z2">
+                <!-- Nome Column -->
+                <ng-container matColumnDef="id">
+                    <mat-header-cell *matHeaderCellDef> Casal </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.casal_id}} </mat-cell>
+                </ng-container>
+
+                <!-- Nome Column -->
+                <ng-container matColumnDef="nome">
+                    <mat-header-cell *matHeaderCellDef> Nome </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.nome}} </mat-cell>
+                </ng-container>
+                <!-- Email Column -->
+                <!-- 
+                <ng-container matColumnDef="email">
+                    <mat-header-cell *matHeaderCellDef> Email </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.email}} </mat-cell>
+                </ng-container> -->
+
+                <ng-container matColumnDef="tipo_participante">
+                    <mat-header-cell *matHeaderCellDef> Tipo </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.tipo_participante}} </mat-cell>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.status}} </mat-cell>
+                </ng-container>
+
+                 <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef> </mat-header-cell>
+                    <mat-cell *matCellDef="let inscricao"> 
+                        <button mat-icon-button (click)="copiarUrl(inscricao)" matTooltip="Copiar link de inscrição">
+                            <mat-icon>link</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="openDialogInscricao(inscricao.id)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button style="color: red;" (click)="deleteInscricao(inscricao.id)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+            </mat-table>
+        </mat-card>
+    </div>
+</div>
