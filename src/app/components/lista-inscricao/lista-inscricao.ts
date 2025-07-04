@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -16,6 +16,8 @@ import { MatTableModule } from '@angular/material/table';
 import { CasaisService } from '../../services/casais.service';
 import { EventosService } from '../../services/eventos.service';
 import { InscricoesService } from '../../services/inscricoes.service';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 
 interface Casal {
   id: number;
@@ -51,8 +53,10 @@ interface Inscricao {
     MatButtonModule,
     MatTableModule,
     MatInputModule,
-    MatIconModule
-
+    MatIconModule,
+    MatCheckboxModule,
+    ReactiveFormsModule,
+    MatSpinner,
   ],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
@@ -89,7 +93,6 @@ export class ListaInscricao implements OnInit {
   }
 
   onEventoChange() {
-    console.log('Evento selecionado:', this.eventoSelecionado);
     this.listaInscritos = [];
     if (!this.eventoSelecionado) {
       return;
@@ -191,6 +194,10 @@ export class ListaInscricao implements OnInit {
         enterAnimationDuration,
         exitAnimationDuration,
       });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      this.onEventoChange();
+    });
   }
 
   carregaListaCasais(casais: any): void {
@@ -226,9 +233,9 @@ export class ListaInscricao implements OnInit {
         this.snackBar.open('Erro ao obter URL completa', 'Fechar', { duration: 3000 });
       }
     });
-  
+
     // Monte a URL completa conforme sua lógica
-    
+
   }
 
   copiarParaClipboard(texto: string) {
@@ -259,7 +266,7 @@ export class ListaInscricao implements OnInit {
   selector: 'dialog-inscricao-afilhado',
   templateUrl: 'dialog-inscricao-afilhado.html',
   styleUrls: ['./lista-inscricao.scss'],
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule],
+  imports: [CommonModule, MatDialogModule, MatCardModule, MatCheckboxModule, MatButtonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -282,6 +289,8 @@ export class DialogConviteAfilhado {
   readonly data = inject<{ casais: Casal[], eventos: number }>(MAT_DIALOG_DATA);
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
+  readonly afilhado = new FormControl(false);
+
 
   urlCompleta = '';
   casalAtual: Casal | undefined;
@@ -339,7 +348,7 @@ export class DialogConfirmarExclusao {
   constructor(
     public dialogRef: MatDialogRef<DialogConfirmarExclusao>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  ) { }
 
   onCancel(): void {
     this.dialogRef.close(false);

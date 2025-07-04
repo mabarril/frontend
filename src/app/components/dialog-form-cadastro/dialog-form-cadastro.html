@@ -1,0 +1,292 @@
+<div class="inscricao-container">
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>Inscrição para o Encontro de Casais com Cristo</mat-card-title>
+            <mat-card-subtitle>Preencha o formulário abaixo para realizar sua inscrição como
+                convidado</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+            <div *ngIf="loading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Carregando...</p>
+            </div>
+
+            <div *ngIf="success" class="success-container">
+                <mat-icon color="primary">check_circle</mat-icon>
+                <h2>Inscrição efetuada com sucesso!</h2>
+                <p>Agradecemos sua inscrição. Em breve você receberá mais informações sobre o evento.</p>
+            </div>
+
+            <form [formGroup]="inscricaoForm" (ngSubmit)="onSubmit()" *ngIf="!loading && !success" novalidate>
+
+
+                <!-- Dados das Pessoas (Esposo e Esposa) -->
+                <div formArrayName="pessoas" class="form-section">
+                    <div *ngFor="let pessoa of pessoasFormArray.controls; let i = index" class="pessoa-form"
+                        [formGroupName]="i">
+                        <h2>{{ pessoa.get('tipo')?.value === 'esposo' ? 'Dados do Esposo' : 'Dados da Esposa' }}</h2>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field full-width">
+                                <mat-label>Nome Completo</mat-label>
+                                <input matInput formControlName="nome_completo">
+                                <mat-error *ngIf="pessoa.get('nome_completo')!.hasError('required')">
+                                    Nome completo é obrigatório
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Nome Social</mat-label>
+                                <input matInput formControlName="nome_social">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Data de Nascimento</mat-label>
+                                <input matInput [matDatepicker]="nascimentoPicker" formControlName="data_nascimento">
+                                <mat-datepicker-toggle matSuffix [for]="nascimentoPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #nascimentoPicker></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Profissão</mat-label>
+                                <input matInput formControlName="profissao">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Email</mat-label>
+                                <input matInput formControlName="email" type="email">
+                                <mat-error *ngIf="pessoa.get('email')?.hasError('email')">
+                                    Email inválido
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Celular</mat-label>
+                                <input matInput formControlName="celular" mask="(00) 00000-0000"
+                                    placeholder="(00) 00000-0000">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>RG</mat-label>
+                                <input matInput formControlName="rg">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Órgão Emissor</mat-label>
+                                <input matInput formControlName="rg_emissor">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>CPF</mat-label>
+                                <input matInput formControlName="cpf" mask="000.000.000-00"
+                                    placeholder="000.000.000-00">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Religião</mat-label>
+                                <mat-select formControlName="religiao">
+                                    <mat-option *ngFor="let religiao of religioes" [value]="religiao">
+                                        {{ religiao }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="pessoa.get('religiao')?.hasError('required')">
+                                    Religião é obrigatória
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="form-field">
+                                <mat-label>Restrição Alimentar</mat-label>
+                                <mat-select formControlName="dieta_alimentar">
+                                    <mat-option *ngFor="let dieta of dietasAlimentares" [value]="dieta">
+                                        {{ dieta }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row checkbox-row">
+                            <mat-checkbox formControlName="problema_saude">Possui problema de saúde?</mat-checkbox>
+                        </div>
+
+                        <div class="form-row" *ngIf="pessoa.get('problema_saude')?.value">
+                            <mat-form-field appearance="outline" class="form-field full-width">
+                                <mat-label>Descreva o problema de saúde</mat-label>
+                                <textarea matInput formControlName="problema_saude_descricao" rows="2"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row checkbox-row">
+                            <mat-checkbox formControlName="medicamento_especial">Usa medicamento
+                                especial?</mat-checkbox>
+                        </div>
+
+                        <div class="form-row" *ngIf="pessoa.get('medicamento_especial')?.value">
+                            <mat-form-field appearance="outline" class="form-field full-width">
+                                <mat-label>Descreva o medicamento</mat-label>
+                                <textarea matInput formControlName="medicamento_especial_descricao" rows="2"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="form-row checkbox-row">
+                            <mat-checkbox formControlName="diabetico">É diabético(a)?</mat-checkbox>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados do Casal -->
+                <mat-card>
+                    <mat-card-content>
+                        <div formGroupName="casal" class="form-section">
+                            <h2>Dados do Casal</h2>
+
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Data do Casamento</mat-label>
+                                    <input matInput [matDatepicker]="casamentoPicker" formControlName="data_casamento">
+                                    <mat-datepicker-toggle matSuffix [for]="casamentoPicker"></mat-datepicker-toggle>
+                                    <mat-datepicker #casamentoPicker></mat-datepicker>
+                                </mat-form-field>
+                            </div>
+
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field full-width">
+                                    <mat-label>Endereço</mat-label>
+                                    <input matInput formControlName="endereco" placeholder="Rua, número, complemento">
+                                    <mat-error *ngIf="inscricaoForm.get('casal.endereco')?.hasError('required')">
+                                        Endereço é obrigatório
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Bairro</mat-label>
+                                    <input matInput formControlName="bairro">
+                                    <mat-error *ngIf="inscricaoForm.get('casal.bairro')?.hasError('required')">
+                                        Bairro é obrigatório
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Cidade</mat-label>
+                                    <input matInput formControlName="cidade">
+                                    <mat-error *ngIf="inscricaoForm.get('casal.cidade')?.hasError('required')">
+                                        Cidade é obrigatória
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>CEP</mat-label>
+                                    <input matInput formControlName="cep" mask="00000-000" placeholder="00000-000">
+                                    <mat-error *ngIf="inscricaoForm.get('casal.cep')?.hasError('required')">
+                                        CEP é obrigatório
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+
+                            <h3>Contato de Emergência</h3>
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Nome do Contato 1</mat-label>
+                                    <input matInput formControlName="contato_emergencia_nome1">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Telefone do Contato 1</mat-label>
+                                    <input matInput formControlName="contato_emergencia_telefone1"
+                                        mask="(00) 00000-0000" placeholder="(00) 00000-0000">
+                                </mat-form-field>
+                            </div>
+
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Nome do Contato 2</mat-label>
+                                    <input matInput formControlName="contato_emergencia_nome2">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Telefone do Contato 2</mat-label>
+                                    <input matInput formControlName="contato_emergencia_telefone2"
+                                        mask="(00) 00000-0000" placeholder="(00) 00000-0000">
+                                </mat-form-field>
+                            </div>
+
+                            <h3>Responsável pelos Filhos durante o Evento</h3>
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Nome do Responsável</mat-label>
+                                    <input matInput formControlName="responsavel_filhos_nome">
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Telefone do Responsável</mat-label>
+                                    <input matInput formControlName="responsavel_filhos_telefone" mask="(00) 00000-0000"
+                                        placeholder="(00) 00000-0000">
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+                <!-- Dados dos Filhos -->
+                <div class="form-section">
+                    <h2>Filhos</h2>
+                    <p *ngIf="filhosFormArray.length === 0">Nenhum filho adicionado.</p>
+
+                    <div formArrayName="filhos">
+                        <div *ngFor="let filho of filhosFormArray.controls; let i = index" [formGroupName]="i"
+                            class="filho-form">
+                            <div class="form-row filho-header">
+                                <h3>Filho {{ i + 1 }}</h3>
+                                <button type="button" mat-icon-button color="warn" (click)="removerFilho(i)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+
+                            <div class="form-row">
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Nome Completo</mat-label>
+                                    <input matInput formControlName="nome_completo">
+                                    <mat-error *ngIf="filho.get('nome_completo')?.hasError('required')">
+                                        Nome completo é obrigatório
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="form-field">
+                                    <mat-label>Data de Nascimento</mat-label>
+                                    <input matInput [matDatepicker]="filhoNascimentoPicker"
+                                        formControlName="data_nascimento">
+                                    <mat-datepicker-toggle matSuffix
+                                        [for]="filhoNascimentoPicker"></mat-datepicker-toggle>
+                                    <mat-datepicker #filhoNascimentoPicker></mat-datepicker>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="add-filho-button">
+                        <button type="button" mat-raised-button color="primary" (click)="adicionarFilho()">
+                            <mat-icon>add</mat-icon> Adicionar Filho
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="form-actions">
+                    <button type="submit" mat-raised-button color="primary"
+                        [disabled]="inscricaoForm.invalid || loading">
+                        <mat-icon>send</mat-icon> Enviar Inscrição
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

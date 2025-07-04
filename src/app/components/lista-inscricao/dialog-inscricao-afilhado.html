@@ -1,51 +1,50 @@
 <!-- Seção de Envio de Convites -->
-    <mat-card class="convite-card">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>mail</mat-icon>
-          Convidar Afilhado
-        </mat-card-title>
-        <mat-card-subtitle>
-          Gere e envie um link único para que um casal se inscreva como afilhado
-        </mat-card-subtitle>
-      </mat-card-header>
+ <mat-card class="convite-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>mail</mat-icon>
+      Gerar Convite
+    </mat-card-title>
+    <mat-card-subtitle>
+      Gere e envie um link único de convite
+    </mat-card-subtitle>
+  </mat-card-header>
 
-      <mat-card-content>
-        <form [formGroup]="conviteForm" (ngSubmit)="enviarConvite()">
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Selecionar Padrinho</mat-label>
-              <mat-select formControlName="padrinho_id">
-                <mat-option *ngFor="let casal of listaCasais" [value]="casal.id">
-                  {{ casal.nome_esposo}} e {{ casal.nome_esposa }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="conviteForm.get('padrinho_id')?.invalid && conviteForm.get('padrinho_id')?.touched">
-                Selecione um casal
-              </mat-error>
-            </mat-form-field>
+  <mat-card-content>
+    <form [formGroup]="conviteForm" (ngSubmit)="enviarConvite()">
+      <div class="form-row">
+        <mat-checkbox style="padding-bottom: 0.5em;" [formControl]="afilhado">Afilhado</mat-checkbox>
+        <div style="padding-bottom: 1em;">
+          <div *ngIf="afilhado.value ; else elseBlock">
+            <span>Selecione Padrinho</span>
           </div>
-
-
-        <div [hidden]="!urlCompleta" class="url-inscricao-exibida">
-          <mat-card class="mat-elevation-z2" style="margin-top: 16px;">
-            <mat-card-content>
-              <a [href]="conviteForm.get('url_convite')" target="_blank">
-                URL do Convite
-              </a>
-            </mat-card-content>
-          </mat-card>
+          <ng-template #elseBlock>
+            <div>
+              <span>Selecione Encontrista</span>
+            </div>
+          </ng-template>
         </div>
-
-          <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" 
-                    [disabled]="conviteForm.invalid || enviandoConvite">
-              <mat-spinner diameter="20" *ngIf="enviandoConvite"></mat-spinner>
-              <mat-icon *ngIf="!enviandoConvite">send</mat-icon>
-              <span *ngIf="!enviandoConvite">Gerar URL</span>
-              <span *ngIf="enviandoConvite">Gerando...</span>
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-select formControlName="padrinho_id">
+            <mat-option *ngFor="let casal of listaCasais" [value]="casal.id">
+              {{ casal.nome_esposo}} e {{ casal.nome_esposa }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="conviteForm.get('padrinho_id')?.invalid && conviteForm.get('padrinho_id')?.touched">
+            Selecione um casal
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="form-actions">
+        <mat-card-actions>
+        <button mat-raised-button color="primary" type="submit" mat-dialog-close [disabled]="conviteForm.invalid || enviandoConvite">
+          <mat-spinner diameter="20" *ngIf="enviandoConvite"></mat-spinner>
+          <mat-icon *ngIf="!enviandoConvite">send</mat-icon>
+          <span *ngIf="!enviandoConvite">Gerar URL</span>
+          <span *ngIf="enviandoConvite">Gerando...</span>
+        </button>
+        </mat-card-actions>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
