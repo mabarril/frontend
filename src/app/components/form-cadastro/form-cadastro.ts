@@ -37,12 +37,12 @@ const DIETAS_ALIMENTARES = [
 ];
 
 @Component({
-  selector: 'app-dialog-form-cadastro',
+  selector: 'app-form-cadastro',
   imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, FormsModule, ReactiveFormsModule, CommonModule],
-  templateUrl: './dialog-form-cadastro.html',
-  styleUrl: './dialog-form-cadastro.scss'
+  templateUrl: './form-cadastro.html',
+  styleUrl: './form-cadastro.scss'
 })
-export class DialogFormCadastro implements OnInit {
+export class FormCadastro implements OnInit {
 
   inscricaoForm!: FormGroup;
   token!: string;
