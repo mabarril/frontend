@@ -51,6 +51,7 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
           this.loading = false;
+          console.log('Login response:', response);
           if (response.success) {
             this.router.navigate(['/dashboard']);
           } else {

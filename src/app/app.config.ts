@@ -6,9 +6,13 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { provideEnvironmentNgxMask } from 'ngx-mask'
 
 export const appConfig: ApplicationConfig = {
+
+
   providers: [
+    provideEnvironmentNgxMask(),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
@@ -20,5 +24,9 @@ export const appConfig: ApplicationConfig = {
       multi: true
     }
   ]
+
+  
 };
+
+
 

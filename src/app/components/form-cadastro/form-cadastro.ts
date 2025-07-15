@@ -18,6 +18,8 @@ import { CommonModule } from '@angular/common';
 import { InscricoesService } from '../../services/inscricoes.service';
 import { Registro } from '../../models/registro.model';
 import { CasaisService } from '../../services/casais.service';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
+
 
 const RELIGIOES = [
   'Adventista do 7º Dia',
@@ -39,7 +41,8 @@ const DIETAS_ALIMENTARES = [
 
 @Component({
   selector: 'app-form-cadastro',
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [NgxMaskDirective,
+    NgxMaskPipe, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './form-cadastro.html',
   styleUrl: './form-cadastro.scss'
 })
@@ -127,7 +130,7 @@ export class FormCadastro implements OnInit {
       data_nascimento: ['']
     });
   }
-get pessoasFormArray(): FormArray {
+  get pessoasFormArray(): FormArray {
     return this.inscricaoForm.get('pessoas') as FormArray;
   }
 
@@ -180,14 +183,14 @@ get pessoasFormArray(): FormArray {
       next: (registro: Registro) => {
 
         console.log('Dados do casal carregados:', registro);
-        // this.loading = false;
-        // if (registro) {
-        //   this.inscricaoForm.patchValue({
-        //     casal: registro.casal,
-        //   });
-        //   // Se precisar ajustar arrays de pessoas/filhos:
-        //   this.atualizarArraysDinamicos(registro);
-        // }
+        this.loading = false;
+        if (registro) {
+          this.inscricaoForm.patchValue({
+            casal: registro.casal,
+          });
+          // Se precisar ajustar arrays de pessoas/filhos:
+          this.atualizarArraysDinamicos(registro);
+        }
       },
       error: () => {
         this.loading = false;

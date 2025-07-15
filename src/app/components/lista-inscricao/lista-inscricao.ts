@@ -18,6 +18,7 @@ import { EventosService } from '../../services/eventos.service';
 import { InscricoesService } from '../../services/inscricoes.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Router } from '@angular/router';
+import { FichaPdfComponent } from '../ficha-pdf/ficha-pdf';
 
 interface Casal {
   id: number;
@@ -57,7 +58,7 @@ interface Inscricao {
     MatCheckboxModule,
     ReactiveFormsModule,
     MatSpinner,
-  ],
+    FichaPdfComponent,],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
 })
@@ -74,7 +75,7 @@ export class ListaInscricao implements OnInit {
   listaInscritos: any[] = [];
   listaInscritosOriginal: any[] = []; // Adicione esta linha
   displayedColumns: string[] = ['id', 'nome', 'tipo_participante', 'status', 'actions'];
-
+  fichaPdf: FichaPdfComponent | undefined;
 
   constructor(
     private casaisService: CasaisService,

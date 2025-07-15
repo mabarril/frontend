@@ -32,6 +32,7 @@ export class CasaisService {
   constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
+    console.log('Headers:', this.authService.getToken());
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `${this.authService.getToken()}`
