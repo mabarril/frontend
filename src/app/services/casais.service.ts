@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Registro } from '../models/registro.model';
 
 interface Casal {
   id: number;
@@ -30,7 +32,7 @@ export class CasaisService {
   getCasais(casais: Casal[] = []) {
     return this.http.get(`${this.apiUrl}/casais`);
   }
-  getCasaisById(id: number) {
+  getCasaisById(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/casais/${id}`);
   }
   createCasal(casal: any) {

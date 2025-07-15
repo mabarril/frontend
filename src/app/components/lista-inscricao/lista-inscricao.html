@@ -19,7 +19,7 @@
             </span>
         </div>
         <div class="col">
-            <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
+            <button mat-button (click)="openDialogInscricao('5ms', '5ms')">Inscrever</button>
         </div>
     </div>
 </div>
@@ -75,7 +75,7 @@
                         <button mat-icon-button (click)="copiarUrl(inscricao)" matTooltip="Copiar link de inscrição">
                             <mat-icon>link</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="openDialogInscricao(inscricao.id)">
+                        <button mat-icon-button (click)="editarCasal(inscricao.casal_id)">
                             <mat-icon>edit</mat-icon>
                         </button>
                         <button mat-icon-button style="color: red;" (click)="deleteInscricao(inscricao.id)">

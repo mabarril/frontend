@@ -19,8 +19,8 @@ export class InscricoesService {
   }
 
     // Enviar inscrição do convidado
-  registrarInscricao(registro: Registro): Observable<any> {
-    return this.http.post(`${this.apiUrl}/inscricoes`, registro);
+  registrarInscricao(inscricao: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/inscricoes`, inscricao);
   }
 
   // atualizar inscrição do convidado

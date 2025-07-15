@@ -11,6 +11,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'lista-incricao', component: ListaInscricao },
   { path: 'registro', component: FormCadastro },
+  { path: 'registro/:id', component: FormCadastro },
   { path: '**', redirectTo: '/dashboard' }
 ];
 

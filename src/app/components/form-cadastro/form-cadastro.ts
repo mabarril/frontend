@@ -17,6 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InscricoesService } from '../../services/inscricoes.service';
 import { Registro } from '../../models/registro.model';
+import { CasaisService } from '../../services/casais.service';
 
 const RELIGIOES = [
   'Adventista do 7º Dia',
@@ -59,11 +60,20 @@ export class FormCadastro implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private inscricoesService: InscricoesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private casaisService: CasaisService
   ) { }
 
   ngOnInit(): void {
-    this.inicializarFormulario()
+    this.inicializarFormulario();
+
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.casal_id = +id;
+        this.carregarDadosCasal(this.casal_id);
+      }
+    });
   }
 
   inicializarFormulario(): void {
@@ -162,6 +172,48 @@ get pessoasFormArray(): FormArray {
         this.mostrarSnackBar('Erro ao enviar inscrição. Por favor, tente novamente.', 'error');
       }
     });
+  }
+
+  carregarDadosCasal(id: number): void {
+    this.loading = true;
+    this.casaisService.getCasaisById(id).subscribe({
+      next: (registro: Registro) => {
+
+        console.log('Dados do casal carregados:', registro);
+        // this.loading = false;
+        // if (registro) {
+        //   this.inscricaoForm.patchValue({
+        //     casal: registro.casal,
+        //   });
+        //   // Se precisar ajustar arrays de pessoas/filhos:
+        //   this.atualizarArraysDinamicos(registro);
+        // }
+      },
+      error: () => {
+        this.loading = false;
+        this.mostrarSnackBar('Erro ao carregar dados do casal.', 'error');
+      }
+    });
+  }
+
+  private atualizarArraysDinamicos(registro: Registro) {
+    // Atualiza pessoas
+    const pessoasArray = this.inscricaoForm.get('pessoas') as FormArray;
+    pessoasArray.clear();
+    if (Array.isArray(registro.pessoas)) {
+      registro.pessoas.forEach(pessoa => {
+        pessoasArray.push(this.fb.group(pessoa));
+      });
+    }
+
+    // Atualiza filhos
+    const filhosArray = this.inscricaoForm.get('filhos') as FormArray;
+    filhosArray.clear();
+    if (Array.isArray(registro.filhos)) {
+      registro.filhos.forEach(filho => {
+        filhosArray.push(this.fb.group(filho));
+      });
+    }
   }
 
   private mostrarSnackBar(mensagem: string, tipo: 'success' | 'error') {

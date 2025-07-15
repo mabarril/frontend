@@ -17,7 +17,7 @@ import { CasaisService } from '../../services/casais.service';
 import { EventosService } from '../../services/eventos.service';
 import { InscricoesService } from '../../services/inscricoes.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-
+import { Router } from '@angular/router';
 
 interface Casal {
   id: number;
@@ -65,9 +65,6 @@ interface Inscricao {
 export class ListaInscricao implements OnInit {
   urlCompleta: any;
 
-  openDialogInscricao(arg0: any) {
-    throw new Error('Method not implemented.');
-  }
   readonly dialog = inject(MatDialog);
   listaCasais!: any;
   eventos: any;
@@ -84,7 +81,7 @@ export class ListaInscricao implements OnInit {
     private eventosService: EventosService,
     private inscricoesService: InscricoesService,
     private urlsUnicasService: UrlsUnicasService,
-
+    private router: Router,
     private snackBar: MatSnackBar,
   ) { }
 
@@ -128,6 +125,10 @@ export class ListaInscricao implements OnInit {
         this.snackBar.open('Erro ao carregar inscrições', 'Fechar', { duration: 3000 });
       }
     });
+  }
+
+  editarCasal(casalId: number) {
+    this.router.navigate(['/registro', casalId]);
   }
 
   applyFilter(event: Event) {
@@ -175,7 +176,7 @@ export class ListaInscricao implements OnInit {
     // Carregar eventos
     this.eventosService.getEventos().subscribe({
       next: (response) => {
-        this.eventos = response || [];
+        this.eventos = (response as Evento[] || []).sort((a: Evento, b: Evento) => b.id - a.id); // Ordena por id decrescente
         this.loading = false;
       },
       error: (error) => {
@@ -186,16 +187,15 @@ export class ListaInscricao implements OnInit {
     });
   }
 
-  openDialogInscricaoAfilhado(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    const dialogRef = this.dialog.open(DialogConviteAfilhado,
-      {
-        data: { casais: this.listaCasais, eventos: this.eventoSelecionado },
-        width: '500px',
-        enterAnimationDuration,
-        exitAnimationDuration,
-      });
+  openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    const dialogRef = this.dialog.open(DialogInscricao, {
+      data: { casais: this.listaCasais, eventos: this.eventoSelecionado },
+      width: '500px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+      // Sempre atualiza a tabela ao fechar o diálogo
       this.onEventoChange();
     });
   }
@@ -263,33 +263,36 @@ export class ListaInscricao implements OnInit {
 }
 
 @Component({
-  selector: 'dialog-inscricao-afilhado',
-  templateUrl: 'dialog-inscricao-afilhado.html',
+  selector: 'dialog-inscricao',
+  templateUrl: 'dialog-inscricao.html',
   styleUrls: ['./lista-inscricao.scss'],
   imports: [CommonModule, MatDialogModule, MatCardModule, MatCheckboxModule, MatButtonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
-export class DialogConviteAfilhado {
+export class DialogInscricao {
 
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private urlsUnicasService: UrlsUnicasService
+    private urlsUnicasService: UrlsUnicasService,
+    private inscricoesService: InscricoesService,
+
   ) {
     this.conviteForm = this.fb.group({
-      padrinho_id: ['', Validators.required],
+      casal_id: ['', Validators.required],
       evento_id: this.data.eventos, // Preenche com o evento selecionado
       url_inscricao: ['']
     });
   }
 
+
+
   conviteForm: FormGroup;
-  readonly dialogRef = inject(MatDialogRef<DialogConviteAfilhado>);
+  readonly dialogRef = inject(MatDialogRef<DialogInscricao>);
   readonly data = inject<{ casais: Casal[], eventos: number }>(MAT_DIALOG_DATA);
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
-  readonly afilhado = new FormControl(false);
+  readonly inscricao = new FormControl(false);
 
 
   urlCompleta = '';
@@ -297,9 +300,45 @@ export class DialogConviteAfilhado {
   loading = false;
   enviandoConvite = false;
 
+  inscreverCasal(): void {
+    this.enviandoConvite = true;
+    let inscricao = {
+      casal_id: this.conviteForm.value.casal_id,
+      evento_id: this.eventos,
+      tipo_participante: 'participante',
+      status: 'pendente',
+    };
+
+    console.log(inscricao);
+    this.inscricoesService.registrarInscricao(inscricao)
+      .subscribe({
+        next: (response: any) => {
+          this.enviandoConvite = false;
+          this.conviteForm.value.url_inscricao = response.data.urlCompleta;
+          this.urlCompleta = response.data.urlCompleta;
+
+          if (response && response.data && response.data[0]) {
+            this.snackBar.open('Inscrição realizada com sucesso!', 'Fechar', {
+              duration: 5000,
+              panelClass: ['success-snackbar']
+            });
+            this.dialogRef.close();
+          }
+        },
+        error: (error) => {
+          this.enviandoConvite = false;
+          console.error('Erro ao inscrever casal:', error);
+          this.snackBar.open(
+            error.error?.message || 'Erro ao inscrever casal',
+            'Fechar',
+            { duration: 3000 }
+          );
+        }
+      });
+  }
+
   enviarConvite(): void {
     if (this.conviteForm.valid) {
-
       this.urlsUnicasService.gerarConvite(this.conviteForm.value)
         .subscribe({
           next: (response: any) => {
@@ -327,7 +366,6 @@ export class DialogConviteAfilhado {
     }
   }
 }
-
 
 @Component({
   selector: 'dialog-confirmar-exclusao',
