@@ -19,6 +19,7 @@ import { InscricoesService } from '../../services/inscricoes.service';
 import { Registro } from '../../models/registro.model';
 import { CasaisService } from '../../services/casais.service';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
+import { Utils } from '../../services/utils';
 
 
 const RELIGIOES = [
@@ -181,13 +182,13 @@ export class FormCadastro implements OnInit {
     this.loading = true;
     this.casaisService.getCasaisById(id).subscribe({
       next: (registro: Registro) => {
-
         console.log('Dados do casal carregados:', registro);
         this.loading = false;
         if (registro) {
           this.inscricaoForm.patchValue({
             casal: registro.casal,
           });
+          console.log('casal', registro.casal),
           // Se precisar ajustar arrays de pessoas/filhos:
           this.atualizarArraysDinamicos(registro);
         }

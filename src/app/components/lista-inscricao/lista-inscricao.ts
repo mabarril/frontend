@@ -90,6 +90,16 @@ export class ListaInscricao implements OnInit {
     this.carregarDados();
   }
 
+  imprimirTodasFichas(evento: number | null) {
+    if (!evento) {
+      this.snackBar.open('Selecione um evento para imprimir as fichas', 'Fechar', { duration: 3000 });
+      return;
+    }
+    this.listaInscritos.forEach((inscrito) => {
+      this.fichaPdf?.buscarCasalEExibirPDF(inscrito.casal_id);
+    })
+  }
+
   onEventoChange() {
     this.listaInscritos = [];
     if (!this.eventoSelecionado) {
@@ -164,6 +174,7 @@ export class ListaInscricao implements OnInit {
     // Carregar casais
     this.casaisService.getCasais().subscribe({
       next: (response) => {
+        console.log('lista ', response);
         this.carregaListaCasais(response);
 
       },
@@ -218,6 +229,19 @@ export class ListaInscricao implements OnInit {
         }
       });
       this.listaCasais.push(casalAtual);
+    });
+
+    this.listaCasais = this.listaCasais.sort((a: Casal, b: Casal) => {
+      const nomeA = (a.nome_esposo || '').toLowerCase();
+      const nomeB = (b.nome_esposo || '').toLowerCase();
+      if (nomeA < nomeB) return -1;
+      if (nomeA > nomeB) return 1;
+      // Se nomes dos esposos forem iguais, ordena pelo nome da esposa
+      const esposaA = (a.nome_esposa || '').toLowerCase();
+      const esposaB = (b.nome_esposa || '').toLowerCase();
+      if (esposaA < esposaB) return -1;
+      if (esposaA > esposaB) return 1;
+      return 0;
     });
     console.log('lista', this.listaCasais)
 

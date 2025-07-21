@@ -1,7 +1,7 @@
 import { Component, DOCUMENT, Input } from '@angular/core';
 import { CasaisService } from '../../services/casais.service'; // ajuste o caminho se necessário
 import jsPDF from 'jspdf';
-import { CheckboxControlValueAccessor } from '@angular/forms';
+import { Utils } from '../../services/utils';
 
 @Component({
   selector: 'app-ficha-pdf',
@@ -11,6 +11,8 @@ import { CheckboxControlValueAccessor } from '@angular/forms';
 export class FichaPdfComponent {
   casal: any;
 
+  
+  
   constructor(private casaisService: CasaisService) { }
 
   buscarCasalEExibirPDF(casalId: number) {
@@ -20,7 +22,6 @@ export class FichaPdfComponent {
     this.casaisService.getCasaisById(casalId).subscribe({
       next: (casal) => {
         this.casal = casal;
-        console.log('Casal encontrado:', this.casal);
         this.gerarPDF();
       },
       error: () => {
@@ -53,7 +54,7 @@ export class FichaPdfComponent {
     doc.text(`Dados do Esposo`, 20, bloco_esposo);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    let dt_nascimento_esposo = this.formatarData(this.casal.pessoas[0].data_nascimento);
+    let dt_nascimento_esposo = Utils.formatarData(this.casal.pessoas[0].data_nascimento);
     doc.text(`Nome do Esposo: ${this.casal.nome_completo || ''}`, 20, bloco_esposo + 5);
     doc.text(`Como gostaria de ser chamado? ${this.casal.pessoas[0].nome_social || ''}`, 20, bloco_esposo + 10);
     doc.text(`Dt. Nasc.: ${dt_nascimento_esposo || ''}`, 120, bloco_esposo + 10);
@@ -72,7 +73,7 @@ export class FichaPdfComponent {
     doc.text(`Dados do Esposa`, 20, bloco_esposa);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    let dt_nascimento_esposa = this.formatarData(this.casal.pessoas[1].data_nascimento);
+    let dt_nascimento_esposa = Utils.formatarData(this.casal.pessoas[1].data_nascimento);
     doc.text(`Nome do Esposo: ${this.casal.pessoas[1].nome_completo || ''}`, 20, bloco_esposa + 5);
     doc.text(`Como gostaria de ser chamado? ${this.casal.nome_social || ''}`, 20, bloco_esposa + 10);
     doc.text(`Dt. Nasc.: ${dt_nascimento_esposa || ''}`, 120, bloco_esposa + 10);
