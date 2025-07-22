@@ -1,22 +1,23 @@
 <div class="inscricao-container">
     <mat-card>
         <mat-card-header>
-            <mat-card-title>Inscrição para o Encontro de Casais com Cristo</mat-card-title>
-            <mat-card-subtitle>Preencha o formulário abaixo para realizar sua inscrição como
-                convidado</mat-card-subtitle>
+            <mat-card-title>Encontro de Casais com Cristo</mat-card-title>
+            <mat-card-subtitle>Formulário de registro de casal</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
             <div *ngIf="loading" class="loading-container">
-                <mat-spinner diameter="50"></mat-spinner>
                 <p>Carregando...</p>
             </div>
 
             <div *ngIf="success" class="success-container">
                 <mat-icon color="primary">check_circle</mat-icon>
-                <h2>Inscrição efetuada com sucesso!</h2>
-                <p>Agradecemos sua inscrição. Em breve você receberá mais informações sobre o evento.</p>
+                <h2>Registro atualizado com sucesso!</h2>
             </div>
+
+            <button  mat-raised-button color="primary" (click)="retornar()">
+                        <mat-icon>send</mat-icon> Retornar
+            </button>
 
             <form [formGroup]="inscricaoForm" (ngSubmit)="onSubmit()" *ngIf="!loading && !success" novalidate>
 
@@ -276,7 +277,7 @@
                 <div class="form-actions">
                     <button type="submit" mat-raised-button color="primary"
                         [disabled]="inscricaoForm.invalid || loading">
-                        <mat-icon>send</mat-icon> Enviar Inscrição
+                        <mat-icon>send</mat-icon> Enviar Atualização
                     </button>
                 </div>
             </form>

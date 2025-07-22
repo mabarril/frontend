@@ -16,7 +16,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InscricoesService } from '../../services/inscricoes.service';
-import { Registro } from '../../models/registro.model';
+import { Registro, RegistroRecord } from '../../models/registro.model';
 import { CasaisService } from '../../services/casais.service';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 import { Utils } from '../../services/utils';
@@ -48,7 +48,7 @@ const DIETAS_ALIMENTARES = [
   styleUrl: './form-cadastro.scss'
 })
 export class FormCadastro implements OnInit {
-
+  
   inscricaoForm!: FormGroup;
   token!: string;
   loading = false;
@@ -70,7 +70,7 @@ export class FormCadastro implements OnInit {
 
   ngOnInit(): void {
     this.inicializarFormulario();
-
+    
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -124,7 +124,7 @@ export class FormCadastro implements OnInit {
       religiao: ['católica', Validators.required]
     });
   }
-
+  
   criarFilhoFormGroup(): FormGroup {
     return this.fb.group({
       nome_completo: ['', Validators.required],
@@ -138,7 +138,7 @@ export class FormCadastro implements OnInit {
   get filhosFormArray(): FormArray {
     return this.inscricaoForm.get('filhos') as FormArray;
   }
-
+  
   adicionarFilho(): void {
     this.filhosFormArray.push(this.criarFilhoFormGroup());
   }
@@ -146,26 +146,46 @@ export class FormCadastro implements OnInit {
   removerFilho(index: number): void {
     this.filhosFormArray.removeAt(index);
   }
+  
+  retornar() {
+    this.router.navigate(['/lista-incricao']);
+  }
 
   onSubmit(): void {
     this.submitted = true;
-
-    // Verificar se o formulário é válido
     if (this.inscricaoForm.invalid) {
       this.mostrarSnackBar('Por favor, corrija os erros no formulário antes de enviar.', 'error');
       return;
     }
-
     this.loading = true;
-
-    // Preparar dados para envio
-    const registro: Registro = {
+    console.log('Formulário enviado:', this.inscricaoForm.value);
+    // Clona o valor do formulário
+    const registro: RegistroRecord = {
       ...this.inscricaoForm.value,
       token: this.token
     };
+    console.log('Registro antes de enviar:', registro);
+    // Converte datas do casal
+    if (registro.casal.data_casamento) {
+      registro.casal.data_casamento = this.formatarDataParaSalvar(registro.casal.data_casamento);
+    }
+    // Converte datas das pessoas
+    if (Array.isArray(registro.pessoas)) {
+      registro.pessoas = registro.pessoas.map(p => ({
+        ...p,
+        data_nascimento: p.data_nascimento ? this.formatarDataParaSalvar(p.data_nascimento) : ''
+      }));
+    }
+    // Converte datas dos filhos
+    if (Array.isArray(registro.filhos)) {
+      registro.filhos = registro.filhos.map(f => ({
+        ...f,
+        data_nascimento: f.data_nascimento ? this.formatarDataParaSalvar(f.data_nascimento) : ''
+      }));
+    }
 
-    // Enviar inscrição
-    this.inscricoesService.atualizarInscricao(this.casal_id, registro).subscribe({
+    console.log('Registro:', registro); 
+    this.casaisService.updateCasal(this.casal_id, registro).subscribe({
       next: () => {
         this.loading = false;
         this.success = true;
@@ -182,16 +202,34 @@ export class FormCadastro implements OnInit {
     this.loading = true;
     this.casaisService.getCasaisById(id).subscribe({
       next: (registro: Registro) => {
-        console.log('Dados do casal carregados:', registro);
         this.loading = false;
         if (registro) {
+          console.log(registro);
+          // Converte datas do casal
+          if (registro.data_casamento) {
+            registro.data_casamento = this.formatarDataParaExibicao(registro.data_casamento);
+            console.log('dt casamento ' , registro.data_casamento)
+          }
+          // Converte datas das pessoas
+          if (Array.isArray(registro.pessoas)) {
+            registro.pessoas = registro.pessoas.map(p => ({
+              ...p,
+              data_nascimento: p.data_nascimento ? this.formatarDataParaExibicao(p.data_nascimento) : ''
+            }));
+          }
+          // Converte datas dos filhos
+          if (Array.isArray(registro.filhos)) {
+            registro.filhos = registro.filhos.map(f => ({
+              ...f,
+              data_nascimento: f.data_nascimento ? this.formatarDataParaExibicao(f.data_nascimento) : ''
+            }));
+          }
           this.inscricaoForm.patchValue({
-            casal: registro.casal,
+            casal: registro,
           });
-          console.log('casal', registro.casal),
-          // Se precisar ajustar arrays de pessoas/filhos:
           this.atualizarArraysDinamicos(registro);
         }
+        console.log('Form:', this.inscricaoForm.value);
       },
       error: () => {
         this.loading = false;
@@ -225,5 +263,35 @@ export class FormCadastro implements OnInit {
       duration: 5000,
       panelClass: [`${tipo}-snackbar`]
     });
+  }
+
+  private formatarDataParaExibicao(data: string | null): string {
+    if (!data) return '';
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  private formatarDataParaSalvar(data: string | null): string {
+    if (!data) return '';
+
+
+    // Se vier no formato ddmmaaaa (ex: 16121997)
+    if (/^\d{8}$/.test(data)) {
+      const dia = data.substring(0, 2);
+      const mes = data.substring(2, 4);
+      const ano = data.substring(4, 8);
+      return `${ano}-${mes}-${dia}`;
+    }
+    // Se vier no formato dd/mm/aaaa
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+      const [dia, mes, ano] = data.split('/');
+      return `${ano}-${mes}-${dia}`;
+    }
+    // Se já estiver no formato aaaa-mm-dd, retorna como está
+    if (/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+      return data;
+    }
+    // Caso contrário, retorna vazio ou trata conforme necessário
+    return '';
   }
 }

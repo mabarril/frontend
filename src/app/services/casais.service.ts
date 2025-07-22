@@ -50,4 +50,8 @@ export class CasaisService {
   createCasal(casal: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/casais`, casal, { headers: this.getHeaders() });
   }
+
+  updateCasal(id: number, casal: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/casais/${id}`, casal, { headers: this.getHeaders() });
+  }
 }

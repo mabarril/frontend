@@ -42,7 +42,6 @@
           </button>
           <button mat-raised-button color="primary" type="submit" mat-dialog-close
             [disabled]="conviteForm.invalid || enviandoConvite">
-            <mat-spinner diameter="20" *ngIf="enviandoConvite"></mat-spinner>
             <mat-icon *ngIf="!enviandoConvite">add</mat-icon>
             <span *ngIf="!enviandoConvite">Adicionar</span>
             <span *ngIf="enviandoConvite">Gerando...</span>

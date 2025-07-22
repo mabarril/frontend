@@ -10,7 +10,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { UrlsUnicasService } from '../../services/urls-unicas.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSpinner } from '@angular/material/progress-spinner';
 import { MatLabel } from '@angular/material/form-field';
 import { MatTableModule } from '@angular/material/table';
 import { CasaisService } from '../../services/casais.service';
@@ -57,7 +56,6 @@ interface Inscricao {
     MatIconModule,
     MatCheckboxModule,
     ReactiveFormsModule,
-    MatSpinner,
     FichaPdfComponent,],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
@@ -79,15 +77,21 @@ export class ListaInscricao implements OnInit {
 
   constructor(
     private casaisService: CasaisService,
-    private eventosService: EventosService,
     private inscricoesService: InscricoesService,
+    private eventosService: EventosService,
     private urlsUnicasService: UrlsUnicasService,
     private router: Router,
     private snackBar: MatSnackBar,
   ) { }
 
   ngOnInit(): void {
+    // Recupera o evento selecionado do sessionStorage ao iniciar
+    const eventoSalvo = this.eventosService.getEventoSelecionado();
     this.carregarDados();
+    if (eventoSalvo) {
+      this.eventoSelecionado = eventoSalvo;
+      this.carregaInscricoes();
+    } 
   }
 
   imprimirTodasFichas(evento: number | null) {
@@ -101,15 +105,20 @@ export class ListaInscricao implements OnInit {
   }
 
   onEventoChange() {
-    this.listaInscritos = [];
-    if (!this.eventoSelecionado) {
-      return;
+    if (!this.eventosService.getEventoSelecionado()) {
+      this.eventosService.setEventoSelecionado(this.eventoSelecionado || 0);
     }
-    this.inscricoesService.getInscricoesDoEvento(this.eventoSelecionado).subscribe({
+    this.carregaInscricoes();
+  }
+
+  private carregaInscricoes() {
+    this.inscricoesService.getInscricoesDoEvento(this.eventosService.getEventoSelecionado()!).subscribe({
       next: (response) => {
         this.inscricoes = (response as Inscricao[]) || [];
         this.listaInscritos = [];
         this.inscricoes.forEach((inscricao: Inscricao) => {
+          console.log('inscricao', inscricao);
+          console.log('listaCasais', this.listaCasais);
           const casal = this.listaCasais.find((c: Casal) => c.id === inscricao.casal_id);
           const registro: any = {};
           registro['id'] = inscricao.id;
@@ -129,7 +138,6 @@ export class ListaInscricao implements OnInit {
           this.listaInscritos.push(registro);
         });
         this.listaInscritosOriginal = [...this.listaInscritos]; // Salva a lista original para filtro
-        console.log('Lista de inscritos:', this.listaInscritos);
       },
       error: (error) => {
         console.error('Erro ao carregar inscrições:', error);
@@ -291,7 +299,7 @@ export class ListaInscricao implements OnInit {
   selector: 'dialog-inscricao',
   templateUrl: 'dialog-inscricao.html',
   styleUrls: ['./lista-inscricao.scss'],
-  imports: [CommonModule, MatDialogModule, MatCardModule, MatCheckboxModule, MatButtonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSpinner, ReactiveFormsModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, MatCardModule, MatCheckboxModule, MatButtonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, ReactiveFormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogInscricao {
