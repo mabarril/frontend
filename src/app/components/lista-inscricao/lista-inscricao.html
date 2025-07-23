@@ -18,11 +18,14 @@
                 <strong>Inscrições:</strong> {{ inscricoes.length }}
             </span>
         </div>
-        <div class="col">
-            <button mat-button (click)="openDialogInscricaoAfilhado('5ms', '5ms')">Enviar Convite</button>
-        </div>
     </div>
 </div>
+<mat-card-actions>
+    <button mat-raised-button color="primary" (click)="cadastrarCasal()">Cadastrar Casal</button>
+    <button mat-raised-button color="primary" (click)="openDialogInscricao('5ms', '5ms')" >Inscrever</button>
+    <!-- <button mat-raised-button color="warn" (click)="imprimirTodasFichas(eventoSelecionado)">Imprimir Fichas</button> -->
+</mat-card-actions>
+<app-ficha-pdf #fichaPdf></app-ficha-pdf>
 
 <!-- Tabela de inscrições -->
 <div *ngIf="inscricoes?.length">
@@ -30,7 +33,7 @@
         <h2>Inscrições do Evento</h2>
     </div>
     <div class="row">
-        
+
         <mat-form-field class="col-3" appearance="outline">
             <mat-label>Pesquisar Casal</mat-label>
             <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mia" #input>
@@ -68,19 +71,23 @@
                     <mat-cell *matCellDef="let inscricao"> {{inscricao.status}} </mat-cell>
                 </ng-container>
 
-                 <!-- Actions Column -->
+                <!-- Actions Column -->
                 <ng-container matColumnDef="actions">
                     <mat-header-cell *matHeaderCellDef> </mat-header-cell>
-                    <mat-cell *matCellDef="let inscricao"> 
+                    <mat-cell *matCellDef="let inscricao">
                         <button mat-icon-button (click)="copiarUrl(inscricao)" matTooltip="Copiar link de inscrição">
                             <mat-icon>link</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="openDialogInscricao(inscricao.id)">
+                        <button mat-icon-button (click)="editarCasal(inscricao.casal_id)">
                             <mat-icon>edit</mat-icon>
                         </button>
                         <button mat-icon-button style="color: red;" (click)="deleteInscricao(inscricao.id)">
                             <mat-icon>delete</mat-icon>
                         </button>
+                        <button mat-icon-button (click)="fichaPdf?.buscarCasalEExibirPDF(inscricao.casal_id)">
+                            <mat-icon>picture_as_pdf</mat-icon>
+                        </button>
+
                     </mat-cell>
                 </ng-container>
 

@@ -37,8 +37,24 @@ export interface Casal {
   responsavel_filhos_telefone?: string;
 }
 
-export interface Registro {
+export interface RegistroRecord {
   casal: Casal;
+  pessoas: Pessoa[];
+  filhos: Filho[];
+}
+
+export interface Registro {
+  data_casamento?: string;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  cep: string;
+  contato_emergencia_nome1?: string;
+  contato_emergencia_telefone1?: string;
+  contato_emergencia_nome2?: string;
+  contato_emergencia_telefone2?: string;
+  responsavel_filhos_nome?: string;
+  responsavel_filhos_telefone?: string;
   pessoas: Pessoa[];
   filhos: Filho[];
 }

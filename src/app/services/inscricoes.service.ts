@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class InscricoesService {
-  private apiUrl = '/api';
+  private apiUrl = 'localhost:21025/api';
   constructor(private http: HttpClient) { }
 
   getInscricoesDoEvento(eventoId: number) {
@@ -19,8 +19,9 @@ export class InscricoesService {
   }
 
     // Enviar inscrição do convidado
-  registrarInscricao(registro: Registro): Observable<any> {
-    return this.http.post(`${this.apiUrl}/inscricoes`, registro);
+  registrarInscricao(inscricao: any): Observable<any> {
+    console.log('Inscrição:', inscricao);
+    return this.http.post(`${this.apiUrl}/inscricoes`, inscricao);
   }
 
   // atualizar inscrição do convidado

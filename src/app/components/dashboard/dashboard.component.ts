@@ -127,4 +127,8 @@ export class DashboardComponent implements OnInit {
   openListaInscricao() {
     this.router.navigate(['/lista-incricao']);
   }
+
+  openCadastraCasal() {
+    this.router.navigate(['/registro']);
+  }
 }
