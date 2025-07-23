@@ -20,7 +20,7 @@ import { Router } from '@angular/router';
 import { FichaPdfComponent } from '../ficha-pdf/ficha-pdf';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-import { initialConfig } from 'ngx-mask';
+
 
 interface Casal {
   id: number;
@@ -66,6 +66,7 @@ interface Inscricao {
 })
 
 export class ListaInscricao implements OnInit {
+
   urlCompleta: string = '';
   readonly dialog = inject(MatDialog);
   listaCasais: Casal[] = [];
@@ -113,9 +114,7 @@ export class ListaInscricao implements OnInit {
   }
 
   onEventoChange() {
-    if (!this.eventosService.getEventoSelecionado()) {
-      this.eventosService.setEventoSelecionado(this.eventoSelecionado || 0);
-    }
+    this.eventosService.setEventoSelecionado(this.eventoSelecionado || 0);
     this.carregaInscricoes();
   }
 
@@ -126,9 +125,7 @@ export class ListaInscricao implements OnInit {
       next: (response: any) => {
         this.inscricoes = response || [];
         this.listaInscritos = this.inscricoes.map(inscricao => {
-          console.log('inscricao', inscricao);
           const casal = this.casaisMap.get(inscricao.casal_id);
-          console.log('casal', casal);
           return {
             id: inscricao.id,
             casal_id: inscricao.casal_id,
@@ -207,9 +204,11 @@ export class ListaInscricao implements OnInit {
       exitAnimationDuration,
     });
     dialogRef.afterClosed().subscribe(() => {
-      this.onEventoChange();
+      this.ngOnInit(); // Recarrega os dados após o fechamento do diálogo
     });
   }
+
+
 
   carregaListaCasais(casais: any[]): void {
     this.listaCasais = casais.map(casal => {
@@ -267,6 +266,10 @@ export class ListaInscricao implements OnInit {
       }
     }
   }
+
+  cadastrarCasal() {
+    this.router.navigate(['/registro']);
+  }
 }
 
 @Component({
@@ -277,22 +280,26 @@ export class ListaInscricao implements OnInit {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogInscricao {
-
+  
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private urlsUnicasService: UrlsUnicasService,
     private inscricoesService: InscricoesService,
-
+    private eventosService: EventosService
   ) {
     this.conviteForm = this.fb.group({
       casal_id: ['', Validators.required],
+      padrinho_id: [''], // Campo para selecionar o padrinho
       evento_id: this.data.eventos, // Preenche com o evento selecionado
-      url_inscricao: ['']
+      url_inscricao: [''],
     });
   }
-
-
+  
+  
+  changeAfilhado() {
+    this.afilhado = !this.afilhado;
+  }
 
   conviteForm: FormGroup;
   readonly dialogRef = inject(MatDialogRef<DialogInscricao>);
@@ -306,17 +313,18 @@ export class DialogInscricao {
   casalAtual: Casal | undefined;
   loading = false;
   enviandoConvite = false;
+  afilhado = false;
 
   inscreverCasal(): void {
     this.enviandoConvite = true;
     let inscricao = {
       casal_id: this.conviteForm.value.casal_id,
-      evento_id: this.eventos,
-      tipo_participante: 'participante',
+      evento_id: this.eventosService.getEventoSelecionado(), 
+      tipo_participante: this.afilhado ? 'convidado' : 'encontrista',
       status: 'pendente',
+      padrinho_id: this.afilhado ? this.conviteForm.value.padrinho_id : null,
     };
 
-    console.log(inscricao);
     this.inscricoesService.registrarInscricao(inscricao)
       .subscribe({
         next: (response: any) => {

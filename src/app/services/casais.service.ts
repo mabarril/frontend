@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Registro } from '../models/registro.model';
 import { AuthService } from './auth.service';
+import { coerceStringArray } from '@angular/cdk/coercion';
 
 interface Casal {
   id: number;
@@ -32,7 +33,6 @@ export class CasaisService {
   constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
-    console.log('Headers:', this.authService.getToken());
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `${this.authService.getToken()}`
@@ -48,6 +48,7 @@ export class CasaisService {
   }
 
   createCasal(casal: any): Observable<any> {
+    console.log('Creating casal:', casal);
     return this.http.post(`${this.apiUrl}/casais`, casal, { headers: this.getHeaders() });
   }
 

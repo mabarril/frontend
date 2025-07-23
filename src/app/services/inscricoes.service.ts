@@ -20,6 +20,7 @@ export class InscricoesService {
 
     // Enviar inscrição do convidado
   registrarInscricao(inscricao: any): Observable<any> {
+    console.log('Inscrição:', inscricao);
     return this.http.post(`${this.apiUrl}/inscricoes`, inscricao);
   }
 

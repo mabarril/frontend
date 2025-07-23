@@ -9,9 +9,9 @@ export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'lista-incricao', component: ListaInscricao },
-  { path: 'registro', component: FormCadastro },
-  { path: 'registro/:id', component: FormCadastro },
+  { path: 'lista-incricao', component: ListaInscricao, canActivate: [AuthGuard]  },
+  { path: 'registro', component: FormCadastro, canActivate: [AuthGuard]  },
+  { path: 'registro/:id', component: FormCadastro, canActivate: [AuthGuard]  },
   { path: '**', redirectTo: '/dashboard' }
 ];
 

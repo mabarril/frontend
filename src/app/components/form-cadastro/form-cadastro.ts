@@ -19,8 +19,6 @@ import { InscricoesService } from '../../services/inscricoes.service';
 import { Registro, RegistroRecord } from '../../models/registro.model';
 import { CasaisService } from '../../services/casais.service';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
-import { Utils } from '../../services/utils';
-
 
 const RELIGIOES = [
   'Adventista do 7º Dia',
@@ -43,12 +41,12 @@ const DIETAS_ALIMENTARES = [
 @Component({
   selector: 'app-form-cadastro',
   imports: [NgxMaskDirective,
-    NgxMaskPipe, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, FormsModule, ReactiveFormsModule, CommonModule],
+    MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './form-cadastro.html',
   styleUrl: './form-cadastro.scss'
 })
 export class FormCadastro implements OnInit {
-  
+
   inscricaoForm!: FormGroup;
   token!: string;
   loading = false;
@@ -70,7 +68,7 @@ export class FormCadastro implements OnInit {
 
   ngOnInit(): void {
     this.inicializarFormulario();
-    
+
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -124,7 +122,7 @@ export class FormCadastro implements OnInit {
       religiao: ['católica', Validators.required]
     });
   }
-  
+
   criarFilhoFormGroup(): FormGroup {
     return this.fb.group({
       nome_completo: ['', Validators.required],
@@ -138,7 +136,7 @@ export class FormCadastro implements OnInit {
   get filhosFormArray(): FormArray {
     return this.inscricaoForm.get('filhos') as FormArray;
   }
-  
+
   adicionarFilho(): void {
     this.filhosFormArray.push(this.criarFilhoFormGroup());
   }
@@ -146,7 +144,7 @@ export class FormCadastro implements OnInit {
   removerFilho(index: number): void {
     this.filhosFormArray.removeAt(index);
   }
-  
+
   retornar() {
     this.router.navigate(['/lista-incricao']);
   }
@@ -184,18 +182,36 @@ export class FormCadastro implements OnInit {
       }));
     }
 
-    console.log('Registro:', registro); 
-    this.casaisService.updateCasal(this.casal_id, registro).subscribe({
-      next: () => {
-        this.loading = false;
-        this.success = true;
-        this.mostrarSnackBar('Inscrição registrada com sucesso!', 'success');
-      },
-      error: () => {
-        this.loading = false;
-        this.mostrarSnackBar('Erro ao enviar inscrição. Por favor, tente novamente.', 'error');
-      }
-    });
+    if (this.casal_id) {
+      // Atualiza casal existente
+      this.casaisService.updateCasal(this.casal_id, registro).subscribe({
+        next: () => {
+          this.loading = false;
+          this.success = true;
+          this.mostrarSnackBar('Inscrição registrada com sucesso!', 'success');
+        },
+        error: () => {
+          this.loading = false;
+          this.mostrarSnackBar('Erro ao enviar inscrição. Por favor, tente novamente.', 'error');
+        }
+      });
+    }
+    else {
+      // Cria novo casal
+      console.log('Registro enviado:', registro);
+      this.casaisService.createCasal(registro).subscribe({
+        next: () => {
+          this.loading = false;
+          this.success = true;
+          this.mostrarSnackBar('Casal registrado com sucesso!', 'success');
+          this.router.navigate(['/lista-incricao']);
+        },
+        error: () => {
+          this.loading = false;
+          this.mostrarSnackBar('Erro ao enviar Casal. Por favor, tente novamente.', 'error');
+        }
+      });
+    }
   }
 
   carregarDadosCasal(id: number): void {
@@ -208,7 +224,7 @@ export class FormCadastro implements OnInit {
           // Converte datas do casal
           if (registro.data_casamento) {
             registro.data_casamento = this.formatarDataParaExibicao(registro.data_casamento);
-            console.log('dt casamento ' , registro.data_casamento)
+            console.log('dt casamento ', registro.data_casamento)
           }
           // Converte datas das pessoas
           if (Array.isArray(registro.pessoas)) {
