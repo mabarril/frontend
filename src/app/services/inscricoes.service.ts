@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class InscricoesService {
-  private apiUrl = '/api';
+  private apiUrl = 'localhost:21025/api';
   constructor(private http: HttpClient) { }
 
   getInscricoesDoEvento(eventoId: number) {
