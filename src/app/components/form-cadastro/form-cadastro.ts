@@ -22,13 +22,12 @@ import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
 const RELIGIOES = [
   'Adventista do 7º Dia',
-  'evangélica',
-  'espírita',
-  'católica',
+  'Evangélica',
+  'Espírita',
+  'Católica',
   'Outras Denominações',
   'Cristão',
-  'outra',
-  'sem religião'
+  'Sem Religião'
 ];
 
 const DIETAS_ALIMENTARES = [

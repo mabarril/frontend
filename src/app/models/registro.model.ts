@@ -15,7 +15,7 @@ export interface Pessoa {
   medicamento_especial_descricao?: string;
   diabetico: boolean;
   dieta_alimentar: 'não' | 'ovolactovegetariano' | 'vegetariano' | 'vegano';
-  religiao: 'Adventista do 7º Dia' | 'católica' | 'evangélica' | 'espírita' | 'Outras Denominações' | 'Cristão' | 'outra' | 'sem religião';
+  religiao: 'Adventista do 7º Dia' | 'Católica' | 'Evangélica' | 'Espírita' | 'Outras Denominações' | 'Cristão' | 'Sem Religião';
 }
 
 export interface Filho {
