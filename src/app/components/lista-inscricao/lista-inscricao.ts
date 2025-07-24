@@ -322,7 +322,7 @@ export class DialogInscricao {
       evento_id: this.eventosService.getEventoSelecionado(), 
       tipo_participante: this.afilhado ? 'convidado' : 'encontrista',
       status: 'pendente',
-      padrinho_id: this.afilhado ? this.conviteForm.value.padrinho_id : null,
+      padrinho_id: this.afilhado ? this.conviteForm.value.padrinho_id : 0,
     };
 
     this.inscricoesService.registrarInscricao(inscricao)
