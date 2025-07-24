@@ -23,6 +23,7 @@
 <mat-card-actions>
     <button mat-raised-button color="primary" (click)="cadastrarCasal()">Cadastrar Casal</button>
     <button mat-raised-button color="primary" (click)="openDialogInscricao('5ms', '5ms')" >Inscrever</button>
+    <button mat-raised-button color="primary" (click)="generatePdf()">Exportar para PDF</button>
     <!-- <button mat-raised-button color="warn" (click)="imprimirTodasFichas(eventoSelecionado)">Imprimir Fichas</button> -->
 </mat-card-actions>
 <app-ficha-pdf #fichaPdf></app-ficha-pdf>

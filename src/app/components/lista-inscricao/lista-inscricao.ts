@@ -20,7 +20,8 @@ import { Router } from '@angular/router';
 import { FichaPdfComponent } from '../ficha-pdf/ficha-pdf';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable'; // Import jsPDF autotable plugin
 
 interface Casal {
   id: number;
@@ -66,6 +67,7 @@ interface Inscricao {
 })
 
 export class ListaInscricao implements OnInit {
+
 
   urlCompleta: string = '';
   readonly dialog = inject(MatDialog);
@@ -270,7 +272,36 @@ export class ListaInscricao implements OnInit {
   cadastrarCasal() {
     this.router.navigate(['/registro']);
   }
+
+  generatePdf() {
+    const doc = new jsPDF();
+
+    // Prepare table headers
+    const head = [this.displayedColumns.map(col => col.toUpperCase())]; // Capitalize for headers
+
+    // Prepare table body data
+    const body = this.listaInscritos.map(row => this.displayedColumns.map(col => row[col]));
+
+    autoTable(doc, {
+      head: head,
+      body: body,
+      startY: 20, // Starting Y position for the table
+      theme: 'striped', // Optional: 'striped', 'grid', 'plain'
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [41, 128, 185], // Example header background color
+        textColor: 255, // White text
+        fontStyle: 'bold',
+      },
+    });
+
+    doc.save('mat-table-export.pdf');
+  }
 }
+
 
 @Component({
   selector: 'dialog-inscricao',
@@ -280,7 +311,7 @@ export class ListaInscricao implements OnInit {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogInscricao {
-  
+
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
@@ -295,8 +326,8 @@ export class DialogInscricao {
       url_inscricao: [''],
     });
   }
-  
-  
+
+
   changeAfilhado() {
     this.afilhado = !this.afilhado;
   }
@@ -319,7 +350,7 @@ export class DialogInscricao {
     this.enviandoConvite = true;
     let inscricao = {
       casal_id: this.conviteForm.value.casal_id,
-      evento_id: this.eventosService.getEventoSelecionado(), 
+      evento_id: this.eventosService.getEventoSelecionado(),
       tipo_participante: this.afilhado ? 'convidado' : 'encontrista',
       status: 'pendente',
       padrinho_id: this.afilhado ? this.conviteForm.value.padrinho_id : 0,
