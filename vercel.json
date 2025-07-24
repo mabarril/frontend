@@ -1,8 +1,8 @@
 {
     "rewrites": [
       {
-        "source": "/api/*",
-        "destination": "http://eccbsb.kinghost.net:21025/api/*"
+        "source": "/api/:match*",
+        "destination": "http://eccbsb.kinghost.net:21025/api/:match*"
       }
     ],
     "headers": [
@@ -16,4 +16,3 @@
       }
     ]
   }
-  
