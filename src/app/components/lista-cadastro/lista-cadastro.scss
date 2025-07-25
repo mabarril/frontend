@@ -1,4 +1,4 @@
-.dashboard-container {
+.container {
   min-height: calc(100vh - 64px);
   background-color: #f5f5f5;
   padding: 20px;
@@ -6,14 +6,21 @@
 
 .row{
   display: flex;
-  flex-wrap: wrap;
   gap: 16px;
-
 }
 
+
 .col {
+  align-items: baseline;
   flex: 1 1 auto;
-  min-width: 300px;
+  flex-basis: 0;
+  min-width: 0; /* Prevents flex items from overflowing */
+  display: flex;
+  
+}  
+
+.col-3 {
+  flex: 3 1 0;
 }
 
 .dashboard-content {
@@ -131,10 +138,10 @@
 
 mat-card-actions {
   display: flex;
-  justify-content: end;
+  justify-content: start;
   gap: 16px;
+  margin-top: 16px;
 }
-
 
 /* Responsive design */
 @media (max-width: 768px) {
@@ -161,3 +168,7 @@ mat-card-actions {
   color: white !important;
 }
 
+.btn-fechar {
+  background-color: #747780 !important; // azul acinzentado
+  color: #fff !important;
+}

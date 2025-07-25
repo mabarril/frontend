@@ -57,6 +57,7 @@ interface Evento {
 })
 export class DashboardComponent implements OnInit {
 
+
   listaCasais!: any;
   eventos: any;
   loading = false;
@@ -130,5 +131,9 @@ export class DashboardComponent implements OnInit {
 
   openCadastraCasal() {
     this.router.navigate(['/registro']);
+  }
+
+  openListasCadastros() {
+    this.router.navigate(['/lista-cadastro']);
   }
 }
