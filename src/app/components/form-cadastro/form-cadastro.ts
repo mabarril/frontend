@@ -155,13 +155,11 @@ export class FormCadastro implements OnInit {
       return;
     }
     this.loading = true;
-    console.log('Formulário enviado:', this.inscricaoForm.value);
     // Clona o valor do formulário
     const registro: RegistroRecord = {
       ...this.inscricaoForm.value,
       token: this.token
     };
-    console.log('Registro antes de enviar:', registro);
     // Converte datas do casal
     if (registro.casal.data_casamento) {
       registro.casal.data_casamento = this.formatarDataParaSalvar(registro.casal.data_casamento);
@@ -197,7 +195,6 @@ export class FormCadastro implements OnInit {
     }
     else {
       // Cria novo casal
-      console.log('Registro enviado:', registro);
       this.casaisService.createCasal(registro).subscribe({
         next: () => {
           this.loading = false;
@@ -219,11 +216,9 @@ export class FormCadastro implements OnInit {
       next: (registro: Registro) => {
         this.loading = false;
         if (registro) {
-          console.log(registro);
           // Converte datas do casal
           if (registro.data_casamento) {
             registro.data_casamento = this.formatarDataParaExibicao(registro.data_casamento);
-            console.log('dt casamento ', registro.data_casamento)
           }
           // Converte datas das pessoas
           if (Array.isArray(registro.pessoas)) {
@@ -244,7 +239,6 @@ export class FormCadastro implements OnInit {
           });
           this.atualizarArraysDinamicos(registro);
         }
-        console.log('Form:', this.inscricaoForm.value);
       },
       error: () => {
         this.loading = false;

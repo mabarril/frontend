@@ -22,6 +22,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable'; // Import jsPDF autotable plugin
+import { Utils } from '../../services/utils';
 
 interface Casal {
   id: number;
@@ -61,7 +62,8 @@ interface Inscricao {
     MatIconModule,
     MatCheckboxModule,
     ReactiveFormsModule,
-    FichaPdfComponent,],
+    FichaPdfComponent,
+  ],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
 })
@@ -82,6 +84,8 @@ export class ListaInscricao implements OnInit {
   fichaPdf?: FichaPdfComponent;
   private casaisMap: Map<number, Casal> = new Map();
   private destroy$ = new Subject<void>();
+  utils = Utils;
+  relacaoCasais: any[] = [];
 
   constructor(
     private casaisService: CasaisService,
@@ -198,6 +202,94 @@ export class ListaInscricao implements OnInit {
     });
   }
 
+  geraListaRestaurante() {
+
+    let listaRestaurante: any[] = [];
+
+    this.relacaoCasais.map(casal => {
+
+      casal.pessoas.forEach((pessoa: any) => {
+        if (pessoa.dieta_alimentar !== "não") {
+          let nome = '';
+          const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
+          const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
+          casal.pessoas.find((p: any) => {
+            if (p.dieta_alimentar !== "não") {
+
+              if (p.tipo === 'esposo') {
+                nome = esposo + ' da ' + esposa;
+              } else {
+                nome = esposa + ' do ' + esposo;
+              }
+              listaRestaurante.push({
+                nome: nome,
+                dieta: p.dieta_alimentar,
+              })
+
+            }
+          });
+        }
+      });
+
+
+      // const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
+      // const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
+      // var nome = "";
+      // casal.pessoas.forEach((pessoa: any) => {
+      //   if (pessoa.dieta_alimentar !== "não") {
+      //     if (pessoa.tipo === 'esposo') {
+      //       nome = ;
+      //     } else {
+      //     listaRestaurante.push({
+      //       nome: pessoa.nome_social,
+      //       dieta: pessoa.dieta_alimentar,
+      //     })
+      //   };
+      // });
+    });
+
+    console.log('listaRestaurante', listaRestaurante);
+
+  }
+
+
+
+
+
+  //     let listaRestaurante = this.relacaoCasais.map(casal => {
+  //       casal.pessoas.array.forEach(element => {
+  //         element.
+  //       });
+  //     const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?. || '';
+  // const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
+  // return {
+  //   id: casal.id,
+  //   nome_esposo: esposo,
+  //   nome_esposa: esposa,
+  //   email_contato: casal.email_contato || ''
+  // };
+
+  // this.listaInscritos = this.inscricoes.map(inscricao => {
+  //   let casais: [] = [];
+
+
+
+
+  //   })
+
+  // return {
+  //   id: inscricao.id,
+  //   casal_id: inscricao.casal_id,
+  //   evento_id: inscricao.evento_id,
+  //   data_inscricao: inscricao.data_inscricao,
+  //   tipo_participante: inscricao.tipo_participante,
+  //   nome: casal ? `${casal.nome_esposo} e ${casal.nome_esposa}` : 'Casal não encontrado',
+  //   email: casal?.email_contato || 'Email não disponível',
+  //   casal: casal.
+  // };
+  // });
+
+
   openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {
     const dialogRef = this.dialog.open(DialogInscricao, {
       data: { casais: this.listaCasais, eventos: this.eventoSelecionado },
@@ -213,6 +305,8 @@ export class ListaInscricao implements OnInit {
 
 
   carregaListaCasais(casais: any[]): void {
+    this.relacaoCasais = [...casais];
+    console.log('rel ', this.relacaoCasais);
     this.listaCasais = casais.map(casal => {
       const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
       const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
@@ -274,34 +368,13 @@ export class ListaInscricao implements OnInit {
   }
 
   generatePdf() {
-    const doc = new jsPDF();
 
-    // Prepare table headers
-    const head = [this.displayedColumns.map(col => col.toUpperCase())]; // Capitalize for headers
-
-    // Prepare table body data
-    const body = this.listaInscritos.map(row => this.displayedColumns.map(col => row[col]));
-
-    autoTable(doc, {
-      head: head,
-      body: body,
-      startY: 20, // Starting Y position for the table
-      theme: 'striped', // Optional: 'striped', 'grid', 'plain'
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-      },
-      headStyles: {
-        fillColor: [41, 128, 185], // Example header background color
-        textColor: 255, // White text
-        fontStyle: 'bold',
-      },
-    });
-
-    doc.save('mat-table-export.pdf');
+    let col = [...this.displayedColumns];
+    col.pop(); // Remove 'actions' column for PDF export
+    // ordenar
+    this.utils.generatePdf(col, this.listaInscritos, 'Lista de Inscritos');
   }
 }
-
 
 @Component({
   selector: 'dialog-inscricao',

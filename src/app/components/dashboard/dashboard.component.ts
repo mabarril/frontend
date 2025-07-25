@@ -122,7 +122,6 @@ export class DashboardComponent implements OnInit {
       });
       this.listaCasais.push(casalAtual);
     });
-    console.log('lista', this.listaCasais)
   }
 
   openListaInscricao() {

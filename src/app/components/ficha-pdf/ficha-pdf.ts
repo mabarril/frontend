@@ -11,13 +11,11 @@ import { Utils } from '../../services/utils';
 export class FichaPdfComponent {
   casal: any;
 
-  
-  
+
+
   constructor(private casaisService: CasaisService) { }
 
   buscarCasalEExibirPDF(casalId: number) {
-
-    console.log('Buscando casal com ID:', casalId);
     if (!casalId) return;
     this.casaisService.getCasaisById(casalId).subscribe({
       next: (casal) => {
@@ -134,9 +132,9 @@ export class FichaPdfComponent {
     doc.text('- De 01/07 a 15/07/25', 42, 229);
     doc.text('- De 16/07/25 em diante', 42, 236);
     doc.text('Devolução do Valor da Inscrição', 102, 215);
-    doc.text('100%', 130, 222,  { align: 'center' });
-    doc.text('50%', 130, 229,  { align: 'center' });
-    doc.text('0%', 130, 236,  { align: 'center' });
+    doc.text('100%', 130, 222, { align: 'center' });
+    doc.text('50%', 130, 229, { align: 'center' });
+    doc.text('0%', 130, 236, { align: 'center' });
 
 
     doc.text('Brasília - DF ____/____/_____', 20, 250);
@@ -144,13 +142,8 @@ export class FichaPdfComponent {
     doc.text('Assinatura do Esposo', 20, 280);
     doc.text('Assinatura da Esposa', 120, 280);
 
-
-
     // Exibir o PDF em uma nova aba
     let pdfName = `Ficha_Casal_${this.casal.pessoas[0].nome_social}_${this.casal.pessoas[1].nome_social}`;
-    doc.save('' + pdfName + '.pdf');    
-    // const pdfBlob = doc.output('blob');
-    // const url = URL.createObjectURL(pdfBlob);
-    // window.open(url, '_blank');
+    doc.save('' + pdfName + '.pdf');
   }
 }
