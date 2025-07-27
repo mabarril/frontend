@@ -17,7 +17,7 @@
         <mat-label>Selecione Casal</mat-label>
         <mat-select formControlName="casal_id">
           <mat-option *ngFor="let casal of listaCasais" [value]="casal.id">
-            {{ casal.nome_esposo }} e {{ casal.nome_esposa }}
+            {{ casal.nome }}
           </mat-option>
         </mat-select>
         <mat-error *ngIf="conviteForm.get('casal_id')?.invalid && conviteForm.get('casal_id')?.touched">
@@ -30,7 +30,7 @@
           <mat-label>Selecione Padrinho</mat-label>
           <mat-select formControlName="padrinho_id">
             <mat-option *ngFor="let casal of listaCasais" [value]="casal.id">
-              {{ casal.nome_esposo }} e {{ casal.nome_esposa }}
+              {{ casal.nome }}
             </mat-option>
           </mat-select>
           <mat-error *ngIf="conviteForm.get('padrinho_id')?.invalid && conviteForm.get('padrinho_id')?.touched">

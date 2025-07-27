@@ -22,10 +22,14 @@
 </div>
 <mat-card-actions>
     <button mat-raised-button color="primary" (click)="cadastrarCasal()">Cadastrar Casal</button>
-    <button mat-raised-button color="primary" (click)="openDialogInscricao('5ms', '5ms')" >Inscrever</button>
-    <button mat-raised-button color="primary" (click)="generatePdf()">Exportar para PDF</button>
-    <button mat-raised-button color="primaty" (click)="geraListaRestaurante()">Relação Dieta Alimentar</button>
-    <button mat-raised-button color="primaty" (click)="geraListaDiabeticos()">Relação Diabéticos</button>
+    <button mat-raised-button color="primary" (click)="openDialogInscricao('5ms', '5ms')">Inscrever</button>
+    <button mat-raised-button color="primary" [matMenuTriggerFor]="menu">Relatórios</button>
+    <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="generatePdf()">Lista Geral</button>
+        <button mat-menu-item (click)="geraListaRestaurante()">Dieta Alimentar</button>
+        <button mat-menu-item (click)="geraListaDiabeticos()">Diabéticos</button>
+        <button mat-menu-item (click)="geraListaAfilhados()">Afilhados</button>
+    </mat-menu>
 </mat-card-actions>
 <app-ficha-pdf #fichaPdf></app-ficha-pdf>
 
@@ -53,7 +57,7 @@
                 <!-- Nome Column -->
                 <ng-container matColumnDef="nome">
                     <mat-header-cell *matHeaderCellDef> Nome </mat-header-cell>
-                    <mat-cell *matCellDef="let inscricao"> {{inscricao.nome}} </mat-cell>
+                    <mat-cell *matCellDef="let inscricao"> {{inscricao.casal.nome}} </mat-cell>
                 </ng-container>
                 <!-- Email Column -->
                 <!-- 

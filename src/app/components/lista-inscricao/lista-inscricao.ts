@@ -20,16 +20,14 @@ import { Router } from '@angular/router';
 import { FichaPdfComponent } from '../ficha-pdf/ficha-pdf';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable'; // Import jsPDF autotable plugin
+import { MatMenu, MatMenuModule } from '@angular/material/menu';
 import { Utils } from '../../services/utils';
-import { P } from '@angular/cdk/keycodes';
 
 interface Casal {
   id: number;
   nome_esposo: string;
   nome_esposa: string;
-  email_contato: string;
+  // email_contato: string;
 }
 
 interface Evento {
@@ -46,6 +44,7 @@ interface Inscricao {
   status: string;
   data_inscricao: string;
   tipo_participante: string;
+  padrinho_id?: number; // Campo opcional para o padrinho
 }
 
 // Serviço para exibir snackbars
@@ -64,6 +63,7 @@ interface Inscricao {
     MatCheckboxModule,
     ReactiveFormsModule,
     FichaPdfComponent,
+    MatMenuModule,
   ],
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
@@ -83,7 +83,7 @@ export class ListaInscricao implements OnInit {
   listaInscritosOriginal: any[] = [];
   displayedColumns: string[] = ['id', 'nome', 'tipo_participante', 'status', 'actions'];
   fichaPdf?: FichaPdfComponent;
-  private casaisMap: Map<number, Casal> = new Map();
+  private casaisMap: Map<number, any> = new Map();
   private destroy$ = new Subject<void>();
   utils = Utils;
   relacaoCasais: any[] = [];
@@ -110,77 +110,6 @@ export class ListaInscricao implements OnInit {
     this.destroy$.complete();
   }
 
-  imprimirTodasFichas(evento: number | null) {
-    if (!evento) {
-      this.snackBar.open('Selecione um evento para imprimir as fichas', 'Fechar', { duration: 3000 });
-      return;
-    }
-    this.listaInscritos.forEach(inscrito => {
-      this.fichaPdf?.buscarCasalEExibirPDF(inscrito.casal_id);
-    });
-  }
-
-  onEventoChange() {
-    this.eventosService.setEventoSelecionado(this.eventoSelecionado || 0);
-    this.carregaInscricoes();
-  }
-
-  private carregaInscricoes() {
-    const eventoId = this.eventosService.getEventoSelecionado();
-    if (!eventoId) return;
-    this.inscricoesService.getInscricoesDoEvento(eventoId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response: any) => {
-        this.inscricoes = response || [];
-        this.listaInscritos = this.inscricoes.map(inscricao => {
-          const casal = this.casaisMap.get(inscricao.casal_id);
-          return {
-            id: inscricao.id,
-            casal_id: inscricao.casal_id,
-            evento_id: inscricao.evento_id,
-            status: inscricao.status === 'confirmada' ? 'Confirmada' : 'Pendente',
-            data_inscricao: inscricao.data_inscricao,
-            tipo_participante: inscricao.tipo_participante,
-            nome: casal ? `${casal.nome_esposo} e ${casal.nome_esposa}` : 'Casal não encontrado',
-            email: casal?.email_contato || 'Email não disponível'
-          };
-        });
-        this.listaInscritosOriginal = [...this.listaInscritos];
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error('Erro ao carregar inscrições:', error);
-        this.snackBar.open('Erro ao carregar inscrições', 'Fechar', { duration: 3000 });
-      }
-    });
-  }
-
-  editarCasal(casalId: number) {
-    this.router.navigate(['/registro', casalId]);
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
-    this.listaInscritos = this.listaInscritosOriginal.filter(casal =>
-      casal.nome.toLowerCase().includes(filterValue)
-    );
-  }
-
-  deleteInscricao(inscricaoId: number) {
-    const dialogRef = this.dialog.open(DialogConfirmarExclusao);
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.inscricoesService.deletarInscricao(inscricaoId).subscribe({
-          next: () => {
-            this.snackBar.open('Inscrição excluída com sucesso!', 'Fechar', { duration: 3000 });
-            this.onEventoChange();
-          },
-          error: () => {
-            this.snackBar.open('Erro ao excluir inscrição', 'Fechar', { duration: 3000 });
-          }
-        });
-      }
-    });
-  }
-
   carregarDados(): void {
     this.loading = true;
     forkJoin({
@@ -203,59 +132,154 @@ export class ListaInscricao implements OnInit {
     });
   }
 
-  geraListaRestaurante() {
-    let listaRestaurante: any[] = [];
-    this.relacaoCasais.map(casal => {
-      if (this.listaInscritos.find((item: any) => item.casal_id === casal.id)) {
-        const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
-        const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
-        casal.pessoas.map((pessoa: any) => {
-          if (pessoa.dieta_alimentar !== "não") {
-            let nome = '';
-            if (pessoa.tipo === 'esposo') {
-              nome = esposo + ' da ' + esposa;
-            } else {
-              nome = esposa + ' do ' + esposo;
-            }
-            listaRestaurante.push({
-              nome: nome,
-              dieta: pessoa.dieta_alimentar,
-            });
+  carregaListaCasais(casais: any[]): void {
+    this.relacaoCasais = [...casais];
+    console.log('rel ', this.relacaoCasais);
+    this.listaCasais = casais.map(casal => {
+      const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
+      const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
+      return {
+        id: casal.id,
+        nome: esposo + ' e ' + esposa,
+        nome_esposo: esposo + ' da ' + esposa,
+        nome_esposa: esposa + ' do ' + esposo,
+        dados: casal
+      };
+    }).sort((a, b) => {
+      const nomeA = a.nome_esposo.toLowerCase();
+      const nomeB = b.nome_esposo.toLowerCase();
+      if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
+      return a.nome_esposa.toLowerCase().localeCompare(b.nome_esposa.toLowerCase());
+    });
+    this.casaisMap = new Map(this.listaCasais.map(casal => [casal.id, casal]));
+  }
+
+  private carregaInscricoes() {
+    const eventoId = this.eventosService.getEventoSelecionado();
+    if (!eventoId) return;
+    this.inscricoesService.getInscricoesDoEvento(eventoId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response: any) => {
+        this.inscricoes = response || [];
+        this.listaInscritos = this.inscricoes.map(inscricao => {
+          const casal = this.casaisMap.get(inscricao.casal_id);
+          return {
+            id: inscricao.id,
+            casal_id: inscricao.casal_id,
+            evento_id: inscricao.evento_id,
+            status: inscricao.status === 'confirmada' ? 'Confirmada' : 'Pendente',
+            data_inscricao: inscricao.data_inscricao,
+            tipo_participante: inscricao.tipo_participante,
+            padrinho_id: inscricao.padrinho_id,
+            casal: casal,
+          };
+        });
+        this.listaInscritos.sort((a, b) => a.casal.nome.localeCompare(b.casal.nome));
+        this.listaInscritosOriginal = [...this.listaInscritos];
+        console.log('Lista de inscritos:', this.listaInscritos);
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Erro ao carregar inscrições:', error);
+        this.snackBar.open('Erro ao carregar inscrições', 'Fechar', { duration: 3000 });
+      }
+    });
+  }
+
+  onEventoChange() {
+    this.eventosService.setEventoSelecionado(this.eventoSelecionado || 0);
+    this.carregaInscricoes();
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.listaInscritos = this.listaInscritosOriginal.filter(casal =>
+      casal.casal.nome.toLowerCase().includes(filterValue)
+    );
+  }
+
+  editarCasal(casalId: number) {
+    this.router.navigate(['/registro', casalId]);
+  }
+
+  deleteInscricao(inscricaoId: number) {
+    const dialogRef = this.dialog.open(DialogConfirmarExclusao);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.inscricoesService.deletarInscricao(inscricaoId).subscribe({
+          next: () => {
+            this.snackBar.open('Inscrição excluída com sucesso!', 'Fechar', { duration: 3000 });
+            this.onEventoChange();
+          },
+          error: () => {
+            this.snackBar.open('Erro ao excluir inscrição', 'Fechar', { duration: 3000 });
           }
         });
-      };
+      }
     });
-    const col = ['nome', 'dieta'];
+  }
+
+  geraListaRestaurante() {
+    let listaRestaurante: any[] = [];
+    this.listaInscritos.map(participante => {
+      participante.casal.dados.pessoas.map((pessoa: any) => {
+        if (pessoa.dieta_alimentar !== "não") {
+          let nome = '';
+          if (pessoa.tipo === 'esposo') {
+            nome = participante.casal.nome_esposo;
+          } else {
+            nome = participante.casal.nome_esposa;
+          }
+          listaRestaurante.push({
+            nome: nome,
+            dieta: pessoa.dieta_alimentar,
+            tipo: participante.tipo_participante,
+          });
+        }
+      });
+    });
+    const col = ['nome', 'dieta', 'tipo'];
     listaRestaurante.sort((a, b) => a.nome.localeCompare(b.nome));
     this.utils.generatePdf(col, listaRestaurante, 'Dieta Alimentar');
   }
 
-    geraListaDiabeticos() {
-    let listaRestaurante: any[] = [];
-    this.relacaoCasais.map(casal => {
-      if (this.listaInscritos.find((item: any) => item.casal_id === casal.id)) {
-        const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
-        const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
-        casal.pessoas.map((pessoa: any) => {
-          if (pessoa.diabetico === true) {
-            let nome = '';
-            if (pessoa.tipo === 'esposo') {
-              nome = esposo + ' da ' + esposa;
-            } else {
-              nome = esposa + ' do ' + esposo;
-            }
-            listaRestaurante.push({
-              nome: nome,
-              diabético: 'SIM',
-            });
+  geraListaDiabeticos() {
+    let listaDiabeticos: any[] = [];
+    this.listaInscritos.map(participante => {
+      participante.casal.dados.pessoas.map((pessoa: any) => {
+        if (pessoa.diabetico === true) {
+          let nome = '';
+          if (pessoa.tipo === 'esposo') {
+            nome = participante.casal.nome_esposo;
+          } else {
+            nome = participante.casal.nome_esposa;
           }
-        });
-      };
+          listaDiabeticos.push({
+            nome: nome,
+            diabético: "SIM",
+            tipo: participante.tipo_participante,
+          });
+        }
+      });
     });
-    const col = ['nome', 'diabético'];
-    listaRestaurante.sort((a, b) => a.nome.localeCompare(b.nome));
-    this.utils.generatePdf(col, listaRestaurante, 'Lista Diabéticos');
+    const col = ['nome', 'diabético', 'tipo'];
+    listaDiabeticos.sort((a, b) => a.nome.localeCompare(b.nome));
+    this.utils.generatePdf(col, listaDiabeticos, 'Lista Diabéticos');
   }
+
+
+  geraListaAfilhados() {
+    let listaAfilhados: any[] = [];
+    this.listaInscritos.filter(inscricao => inscricao.tipo_participante === 'convidado').forEach(participante => {
+      listaAfilhados.push({
+        convidado: participante.casal.nome,
+        padrinho: participante.padrinho_id ? this.casaisMap.get(participante.padrinho_id)?.nome : 'Não definido',
+      }
+      );
+    });
+    const col = ['convidado', 'padrinho'];
+    listaAfilhados.sort((a, b) => a.convidado.localeCompare(b.convidado));
+    this.utils.generatePdf(col, listaAfilhados, 'Lista Afilhados');
+  }
+
 
   openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {
     const dialogRef = this.dialog.open(DialogInscricao, {
@@ -267,29 +291,6 @@ export class ListaInscricao implements OnInit {
     dialogRef.afterClosed().subscribe(() => {
       this.ngOnInit(); // Recarrega os dados após o fechamento do diálogo
     });
-  }
-
-
-
-  carregaListaCasais(casais: any[]): void {
-    this.relacaoCasais = [...casais];
-    console.log('rel ', this.relacaoCasais);
-    this.listaCasais = casais.map(casal => {
-      const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social || '';
-      const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social || '';
-      return {
-        id: casal.id,
-        nome_esposo: esposo,
-        nome_esposa: esposa,
-        email_contato: casal.email_contato || ''
-      };
-    }).sort((a, b) => {
-      const nomeA = a.nome_esposo.toLowerCase();
-      const nomeB = b.nome_esposo.toLowerCase();
-      if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
-      return a.nome_esposa.toLowerCase().localeCompare(b.nome_esposa.toLowerCase());
-    });
-    this.casaisMap = new Map(this.listaCasais.map(casal => [casal.id, casal]));
   }
 
   copiarUrl(inscricao: any) {
@@ -338,8 +339,15 @@ export class ListaInscricao implements OnInit {
 
     let col = [...this.displayedColumns];
     col.pop(); // Remove 'actions' column for PDF export
-    // ordenar
-    this.utils.generatePdf(col, this.listaInscritos, 'Lista de Inscritos');
+    let lista = this.listaInscritos.map(inscricao => {
+      return {
+        id: inscricao.id,
+        tipo_participante: inscricao.tipo_participante,
+        status: inscricao.status,
+        nome: inscricao.casal.nome
+      };
+    });
+    this.utils.generatePdf(col, lista, 'Lista de Inscritos');
   }
 }
 
@@ -374,7 +382,7 @@ export class DialogInscricao {
 
   conviteForm: FormGroup;
   readonly dialogRef = inject(MatDialogRef<DialogInscricao>);
-  readonly data = inject<{ casais: Casal[], eventos: number }>(MAT_DIALOG_DATA);
+  readonly data = inject<{ casais: any[], eventos: number }>(MAT_DIALOG_DATA);
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
   readonly inscricao = new FormControl(false);
