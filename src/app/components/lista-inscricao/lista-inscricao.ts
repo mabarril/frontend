@@ -22,12 +22,20 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatMenu, MatMenuModule } from '@angular/material/menu';
 import { Utils } from '../../services/utils';
+import { ExcelExportService } from '../../services/excel-export.service';
 
 interface Casal {
   id: number;
   nome_esposo: string;
   nome_esposa: string;
   // email_contato: string;
+}
+
+export interface ExportColumn {
+  key: string;
+  header: string;
+  width?: number;
+  formatter?: (value: any) => string;
 }
 
 interface Evento {
@@ -47,7 +55,6 @@ interface Inscricao {
   padrinho_id?: number; // Campo opcional para o padrinho
 }
 
-// Serviço para exibir snackbars
 @Component({
   selector: 'app-lista-inscricao',
   imports: [
@@ -68,9 +75,7 @@ interface Inscricao {
   templateUrl: './lista-inscricao.html',
   styleUrl: './lista-inscricao.scss'
 })
-
 export class ListaInscricao implements OnInit {
-
 
   urlCompleta: string = '';
   readonly dialog = inject(MatDialog);
@@ -95,6 +100,7 @@ export class ListaInscricao implements OnInit {
     private urlsUnicasService: UrlsUnicasService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private excelExportService: ExcelExportService // Injeção do serviço de exportação
   ) { }
 
   ngOnInit(): void {
@@ -217,6 +223,116 @@ export class ListaInscricao implements OnInit {
     });
   }
 
+  listaSeguro() {
+    let listaSeguro: any[] = [];
+    this.listaInscritos.map(participante => {
+      participante.casal.dados.pessoas.map((pessoa: any) => {
+        listaSeguro.push({
+          nome: pessoa.nome_completo,
+          cpf: pessoa.cpf,
+          data_nascimento: this.utils.formatarData(pessoa.data_nascimento),
+          rg: pessoa.rg,
+          orgao_emissor: pessoa.rg_emissor,
+        });
+      });
+    });
+
+    const columns: ExportColumn[] = [
+      { key: 'nome', header: 'Nome', width: 30 },
+      { key: 'cpf', header: 'CPF', width: 25 },
+      { key: 'data_nascimento', header: 'Dt. Nascimento', width: 20 },
+      { key: 'rg', header: 'Identidade', width: 18 },
+      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 }
+    ];
+
+    listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
+    this.excelExportService.exportToExcel(listaSeguro, columns);   
+  }
+
+  // ========== MÉTODOS DE EXPORTAÇÃO PARA EXCEL ==========
+
+  /**
+   * Exporta a lista completa de inscritos para Excel
+   */
+  exportarListaInscritosExcel(): void {
+    try {
+      if (!this.listaInscritos || this.listaInscritos.length === 0) {
+        this.snackBar.open('Nenhum dado disponível para exportação', 'Fechar', { duration: 3000 });
+        return;
+      }
+
+      const nomeEvento = this.getNomeEventoSelecionado();
+      this.excelExportService.exportListaInscritos(this.listaInscritos, nomeEvento);
+
+      this.snackBar.open('Lista de inscritos exportada com sucesso!', 'Fechar', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+    } catch (error) {
+      console.error('Erro ao exportar lista de inscritos:', error);
+      this.snackBar.open('Erro ao exportar lista de inscritos', 'Fechar', { duration: 3000 });
+    }
+  }
+
+  /**
+   * Exporta lista de dietas alimentares para Excel
+   */
+  exportarListaDietasExcel(): void {
+    try {
+      this.excelExportService.exportListaDietas(this.listaInscritos);
+      this.snackBar.open('Lista de dietas alimentares exportada com sucesso!', 'Fechar', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+    } catch (error) {
+      console.error('Erro ao exportar lista de dietas:', error);
+      this.snackBar.open('Erro ao exportar lista de dietas', 'Fechar', { duration: 3000 });
+    }
+  }
+
+  /**
+   * Exporta lista de diabéticos para Excel
+   */
+  exportarListaDiabeticosExcel(): void {
+    try {
+      this.excelExportService.exportListaDiabeticos(this.listaInscritos);
+      this.snackBar.open('Lista de diabéticos exportada com sucesso!', 'Fechar', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+    } catch (error) {
+      console.error('Erro ao exportar lista de diabéticos:', error);
+      this.snackBar.open('Erro ao exportar lista de diabéticos', 'Fechar', { duration: 3000 });
+    }
+  }
+
+  /**
+   * Exporta lista de afilhados para Excel
+   */
+  exportarListaAfilhadosExcel(): void {
+    try {
+      this.excelExportService.exportListaAfilhados(this.listaInscritos, this.casaisMap);
+      this.snackBar.open('Lista de afilhados exportada com sucesso!', 'Fechar', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+    } catch (error) {
+      console.error('Erro ao exportar lista de afilhados:', error);
+      this.snackBar.open('Erro ao exportar lista de afilhados', 'Fechar', { duration: 3000 });
+    }
+  }
+
+  /**
+   * Obtém o nome do evento selecionado
+   */
+  private getNomeEventoSelecionado(): string {
+    if (!this.eventoSelecionado) return '';
+    const evento = this.eventos.find(e => e.id === this.eventoSelecionado);
+    return evento?.nome || '';
+  }
+
+  // ========== MÉTODOS ORIGINAIS MANTIDOS ==========
+
   geraListaRestaurante() {
     let listaRestaurante: any[] = [];
     this.listaInscritos.map(participante => {
@@ -265,7 +381,6 @@ export class ListaInscricao implements OnInit {
     this.utils.generatePdf(col, listaDiabeticos, 'Lista Diabéticos');
   }
 
-
   geraListaAfilhados() {
     let listaAfilhados: any[] = [];
     this.listaInscritos.filter(inscricao => inscricao.tipo_participante === 'convidado').forEach(participante => {
@@ -279,7 +394,6 @@ export class ListaInscricao implements OnInit {
     listaAfilhados.sort((a, b) => a.convidado.localeCompare(b.convidado));
     this.utils.generatePdf(col, listaAfilhados, 'Lista Afilhados');
   }
-
 
   openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {
     const dialogRef = this.dialog.open(DialogInscricao, {
@@ -336,7 +450,6 @@ export class ListaInscricao implements OnInit {
   }
 
   generatePdf() {
-
     let col = [...this.displayedColumns];
     col.pop(); // Remove 'actions' column for PDF export
     let lista = this.listaInscritos.map(inscricao => {
@@ -350,6 +463,8 @@ export class ListaInscricao implements OnInit {
     this.utils.generatePdf(col, lista, 'Lista de Inscritos');
   }
 }
+
+// ========== COMPONENTES DE DIÁLOGO MANTIDOS ==========
 
 @Component({
   selector: 'dialog-inscricao',
@@ -375,7 +490,6 @@ export class DialogInscricao {
     });
   }
 
-
   changeAfilhado() {
     this.afilhado = !this.afilhado;
   }
@@ -386,7 +500,6 @@ export class DialogInscricao {
   readonly listaCasais = this.data.casais;
   readonly eventos = this.data.eventos;
   readonly inscricao = new FormControl(false);
-
 
   urlCompleta = '';
   casalAtual: Casal | undefined;
@@ -478,8 +591,7 @@ export class DialogInscricao {
 })
 export class DialogConfirmarExclusao {
   constructor(
-    public dialogRef: MatDialogRef<DialogConfirmarExclusao>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    public dialogRef: MatDialogRef<DialogConfirmarExclusao>
   ) { }
 
   onCancel(): void {
@@ -490,3 +602,4 @@ export class DialogConfirmarExclusao {
     this.dialogRef.close(true);
   }
 }
+
