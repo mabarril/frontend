@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, inject, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -20,9 +20,10 @@ import { Router } from '@angular/router';
 import { FichaPdfComponent } from '../ficha-pdf/ficha-pdf';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatMenu, MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule } from '@angular/material/menu';
 import { Utils } from '../../services/utils';
 import { ExcelExportService } from '../../services/excel-export.service';
+import { ListaFilhos } from '../lista-filhos/lista-filhos';
 
 interface Casal {
   id: number;
@@ -92,6 +93,7 @@ export class ListaInscricao implements OnInit {
   private destroy$ = new Subject<void>();
   utils = Utils;
   relacaoCasais: any[] = [];
+  listaFilho = ListaFilhos;
 
   constructor(
     private casaisService: CasaisService,
@@ -246,7 +248,7 @@ export class ListaInscricao implements OnInit {
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
-    this.excelExportService.exportToExcel(listaSeguro, columns);   
+    this.excelExportService.exportToExcel(listaSeguro, columns);
   }
 
   // ========== MÉTODOS DE EXPORTAÇÃO PARA EXCEL ==========
@@ -393,6 +395,35 @@ export class ListaInscricao implements OnInit {
     const col = ['convidado', 'padrinho'];
     listaAfilhados.sort((a, b) => a.convidado.localeCompare(b.convidado));
     this.utils.generatePdf(col, listaAfilhados, 'Lista Afilhados');
+  }
+
+  listarFilhos() {
+    let relacaoFilhos: any[] = [];
+    let listaAfilhados = this.listaInscritos.filter(inscricao => inscricao.tipo_participante === 'convidado');
+    listaAfilhados.forEach(afilhado => {
+      this.casaisService.getCasaisById(afilhado.casal_id).subscribe({
+        next: (casal: any) => {
+          if (casal && casal.filhos && casal.filhos.length > 0) {
+            let filhos: { nome_completo: any; data_nascimento: any; }[] = [];
+            casal.filhos.forEach((filho: any) => {
+              filhos.push({
+                nome_completo: filho.nome_completo.toUpperCase(),
+                data_nascimento: this.utils.formatarData(filho.data_nascimento),
+              });
+            });
+            let reg = {
+              nome: afilhado.casal.nome,
+              filhos: [...filhos]
+            };
+            relacaoFilhos.push(reg);
+          }
+        },
+        error: () => {
+          console.error('Erro ao buscar dados do filho');
+        }
+      });
+    })
+    this.listaFilho.gerarPDF(relacaoFilhos);
   }
 
   openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {
