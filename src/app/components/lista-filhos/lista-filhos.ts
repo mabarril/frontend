@@ -12,22 +12,18 @@ export class ListaFilhos {
   static gerarPDF(filhos: any[]) {
     const doc = new jsPDF();
 
-    console.log('Gerando PDF com os filhos:', filhos);
+    let positionY = 50;
 
-
-
-    if (!filhos) return;
-    doc.rect(15, 15, 180, 15); // empty square
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(`ENCONTRO DE CASAIS COM CRISTO (ECC) - 01 a 03/AGO/25`, 105, 20, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
-    doc.text(`Relação de Filhos`, 105, 27, { align: 'center' });
+    doc.text('Teste', 50, positionY);
 
-    let yPosition = 40;
-    yPosition += 5;
-    doc.setFont('helvetica', 'normal');
+    positionY += 10;
+
+    for (const pais of filhos) {
+      // doc.text(filhos.nome, 50, positionY +=10);
+    }
+    
+    
 
     let pdfName = `Filhos`;
     doc.save('' + pdfName + '.pdf');
