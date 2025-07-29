@@ -24,7 +24,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Utils } from '../../services/utils';
 import { ExcelExportService } from '../../services/excel-export.service';
 import { ListaFilhos } from '../lista-filhos/lista-filhos';
-import { RelatorioOnibus } from '../relatorio-onibus/relatorio-onibus';
 import { jsPDF } from 'jspdf';
 
 interface Casal {
@@ -96,8 +95,7 @@ export class ListaInscricao implements OnInit {
   utils = Utils;
   relacaoCasais: any[] = [];
   listaFilho = ListaFilhos;
-  relatorioOnibus = RelatorioOnibus;
-
+  
   constructor(
     private casaisService: CasaisService,
     private inscricoesService: InscricoesService,
