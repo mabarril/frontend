@@ -236,6 +236,7 @@ export class ListaInscricao implements OnInit {
           data_nascimento: this.utils.formatarData(pessoa.data_nascimento),
           rg: pessoa.rg,
           orgao_emissor: pessoa.rg_emissor,
+          sexo: pessoa.tipo === "esposo"? "masulino" :"feminino"
         });
       });
     });
@@ -245,7 +246,8 @@ export class ListaInscricao implements OnInit {
       { key: 'cpf', header: 'CPF', width: 25 },
       { key: 'data_nascimento', header: 'Dt. Nascimento', width: 20 },
       { key: 'rg', header: 'Identidade', width: 18 },
-      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 }
+      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 },
+      { key: 'sexo', header: 'Sexo', width: 20 }
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -317,7 +319,7 @@ export class ListaInscricao implements OnInit {
     const columns: ExportColumn[] = [
       { key: 'nome', header: 'Nome', width: 30 },
       { key: 'rg', header: 'Identidade', width: 18 },
-      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 },
+      { key: 'orgao', header: 'Orgão Emissor', width: 18 },
       { key: 'cpf', header: 'CPF', width: 25 }
     ];
 
