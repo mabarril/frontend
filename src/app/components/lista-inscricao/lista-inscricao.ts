@@ -232,7 +232,7 @@ export class ListaInscricao implements OnInit {
       participante.casal.dados.pessoas.map((pessoa: any) => {
         listaSeguro.push({
           nome: pessoa.nome_completo,
-          cpf: this.formataCpf(pessoa.cpf),
+          cpf: pessoa.cpf,
           data_nascimento: this.utils.formatarData(pessoa.data_nascimento),
           rg: pessoa.rg,
           orgao_emissor: pessoa.rg_emissor,
