@@ -1,47 +1,52 @@
-import { Component, OnInit } from '@angular/core';
-import { InscricoesService } from '../../services/inscricoes.service';
-import { CasaisService } from '../../services/casais.service';
-import { Casal, RegistroRecord } from '../../models/registro.model';
-import { EMPTY_SUBSCRIPTION } from 'rxjs/internal/Subscription';
+import { Component } from '@angular/core';
+import { Pessoa, RegistroRecord } from '../../models/registro.model';
+
+interface RegistroOnibus {
+  nome: string;
+  rg: string;
+  orgao: string;
+  cpf: string;
+}
 
 @Component({
   selector: 'app-relatorio-onibus',
+  standalone: true,
   imports: [],
   templateUrl: './relatorio-onibus.html',
   styleUrl: './relatorio-onibus.scss'
 })
-
-interface registroOnibus {
-  nome: string;
-  rg: string;
-  cpf: string;
-  org: string;
-}
-
 export class RelatorioOnibus {
-  
-    constructor(
-    private inscricaoService: InscricoesService,
-    private casaisService: CasaisService
-   ) { }
 
-  gerarRelatorio(convidados : RegistroRecord[]) {
-    convidados.map((casal : RegistroRecord) => {
-      const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo');
-      const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa');
 
-      const regEsposo = {
-        nome: esposo?.nome_completo,
-        rg: esposo?.rg,
-        orgao: esposo?.rg_emissor,
-        cpf: esposo?.cpf
+  static gerarRelatorio(convidados: any[]) {
+    const novaRelacao: RegistroOnibus[] = [];
+    convidados.forEach((casal: any) => {
+      // A interface Pessoa é uma suposição, ajuste se o tipo for outro.
+      if (casal.tipo_participante === "convidado") {
+        const esposo = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo');
+        const esposa = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa');
+
+        if (esposo) {
+          novaRelacao.push({
+            nome: esposo.nome_completo ?? '',
+            rg: esposo.rg ?? '',
+            orgao: esposo.rg_emissor ?? '',
+            cpf: esposo.cpf ?? '',
+          });
+        }
+
+        if (esposa) {
+          novaRelacao.push({
+            nome: esposa.nome_completo ?? '',
+            rg: esposa.rg ?? '',
+            orgao: esposa.rg_emissor ?? '',
+            cpf: esposa.cpf ?? '',
+          });
+        }
       }
-
-      const regEsposa = {
-        
-      }
-
-    } );
+    });
+    novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+    return novaRelacao;
   }
 
 }

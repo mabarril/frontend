@@ -24,6 +24,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Utils } from '../../services/utils';
 import { ExcelExportService } from '../../services/excel-export.service';
 import { ListaFilhos } from '../lista-filhos/lista-filhos';
+import { RelatorioOnibus } from '../relatorio-onibus/relatorio-onibus';
+import { jsPDF } from 'jspdf';
 
 interface Casal {
   id: number;
@@ -94,6 +96,7 @@ export class ListaInscricao implements OnInit {
   utils = Utils;
   relacaoCasais: any[] = [];
   listaFilho = ListaFilhos;
+  relatorioOnibus = RelatorioOnibus;
 
   constructor(
     private casaisService: CasaisService,
@@ -251,6 +254,78 @@ export class ListaInscricao implements OnInit {
     this.excelExportService.exportToExcel(listaSeguro, columns);
   }
 
+  formataCpf(valor: string) {
+    valor = valor.replace(/(\.|\/|\-)/g, "");
+    return valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, "\$1.\$2.\$3\-\$4");
+  }
+
+  listaOnibus() {
+    const novaRelacao: any[] = [];
+    this.listaInscritos.forEach((casal: any) => {
+      // A interface Pessoa é uma suposição, ajuste se o tipo for outro.
+      if (casal.tipo_participante === "convidado" || casal.casal_id === 247) {
+        const esposo = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo');
+        const esposa = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa');
+
+        if (esposo) {
+          novaRelacao.push({
+            nome: esposo.nome_completo ?? '',
+            rg: esposo.rg ?? '',
+            orgao: esposo.rg_emissor ?? '',
+            cpf: this.formataCpf(esposo.cpf) ?? '',
+          });
+        }
+
+        if (esposa) {
+          novaRelacao.push({
+            nome: esposa.nome_completo ?? '',
+            rg: esposa.rg ?? '',
+            orgao: esposa.rg_emissor ?? '',
+            cpf: this.formataCpf(esposa.cpf) ?? '',
+          });
+        }
+      }
+    });
+    novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    let pdf = new jsPDF();
+    pdf.rect(15, 10, 180, 15); // empty square
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text(`ENCONTRO DE CASAIS COM CRISTO (ECC)`, 105, 15, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(12);
+    pdf.text(`Relacao de Passageiros - 01/08/25 a 03/08/25`, 105, 22, { align: 'center' });
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text(`Origem: Brasília - DF`, 20, 35, { align: 'left' });
+    pdf.text(`Destino: Brasília - DF`, 105, 35, { align: 'left' })
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+
+    let linha = 40;
+    for (const item of novaRelacao) {
+      linha += 5;
+      pdf.text(item.nome, 20, linha);
+      pdf.text(item.rg, 105, linha);
+      pdf.text(item.orgao, 135, linha);
+      pdf.text(item.cpf, 160, linha);
+    }
+
+    pdf.save('lista.pdf');
+
+    const columns: ExportColumn[] = [
+      { key: 'nome', header: 'Nome', width: 30 },
+      { key: 'rg', header: 'Identidade', width: 18 },
+      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 },
+      { key: 'cpf', header: 'CPF', width: 25 }
+    ];
+
+    this.excelExportService.exportToExcel(novaRelacao, columns, {filename: 'Lista Passageiros'});
+
+  }
   // ========== MÉTODOS DE EXPORTAÇÃO PARA EXCEL ==========
 
   /**
