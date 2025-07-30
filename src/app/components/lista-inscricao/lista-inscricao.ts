@@ -95,7 +95,7 @@ export class ListaInscricao implements OnInit {
   utils = Utils;
   relacaoCasais: any[] = [];
   listaFilho = ListaFilhos;
-  
+
   constructor(
     private casaisService: CasaisService,
     private inscricoesService: InscricoesService,
@@ -229,14 +229,16 @@ export class ListaInscricao implements OnInit {
   listaSeguro() {
     let listaSeguro: any[] = [];
     this.listaInscritos.map(participante => {
+      console.log(participante);
       participante.casal.dados.pessoas.map((pessoa: any) => {
         listaSeguro.push({
           nome: pessoa.nome_completo,
-          cpf: pessoa.cpf? this.formataCpf(pessoa.cpf) : pessoa.cpf,
+          cpf: pessoa.cpf ? this.formataCpf(pessoa.cpf) : pessoa.cpf,
           data_nascimento: this.utils.formatarData(pessoa.data_nascimento),
           rg: pessoa.rg,
           orgao_emissor: pessoa.rg_emissor,
-          sexo: pessoa.tipo === "esposo"? "masulino" :"feminino"
+          sexo: pessoa.tipo === "esposo" ? "Masculino" : "Feminino",
+          casal: pessoa.tipo === "esposo" ? participante.casal.nome_esposo : participante.casal.nome_esposa
         });
       });
     });
@@ -247,11 +249,97 @@ export class ListaInscricao implements OnInit {
       { key: 'data_nascimento', header: 'Dt. Nascimento', width: 20 },
       { key: 'rg', header: 'Identidade', width: 18 },
       { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 },
-      { key: 'sexo', header: 'Sexo', width: 20 }
+      { key: 'sexo', header: 'Sexo', width: 20 },
+      { key: 'casal', header: 'Casal', width: 30 }
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
     this.excelExportService.exportToExcel(listaSeguro, columns);
+  }
+
+  listaGeral() {
+    let lista: any[] = [];
+    this.relacaoCasais.map(casal => {
+      console.log(casal);
+      const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo');
+      const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa');
+      lista.push({
+        casal: esposo.nome_social + ' e ' + esposa.nome_social,
+        id_casal: casal.id,
+
+        nome_esposo: esposo.nome_social,
+        nome_completo_esposo: esposo.nome_completo,
+        email_esposo: esposo.email_contato,
+        dn_esposo: esposo.data_nascimento,
+        profissao_esposo: esposo.profissao,
+        rg_esposo: esposo.rg,
+        orgao_emissor_esposo: esposo.rg_emissor,
+        cpf_esposo: esposo.cpf? this.formataCpf(esposo.cpf) :esposo.cpf,
+        diabetico_esposo: esposo.diabetico,
+        religiao_esposo: esposo.religiao,
+        celular_esposo: esposo.celular,
+
+        nome_esposa: esposa.nome_social,
+        nome_completo_esposa: esposa.nome_completo,
+        email_esposa: esposa.email_contato,
+        dn_esposa: esposa.data_nascimento,
+        profissao_esposa: esposa.profissao,
+        rg_esposa: esposa.rg,
+        orgao_emissor_esposa: esposa.rg_emissor,
+        cpf_esposa: esposa.cpf? this.formataCpf(esposa.cpf) : esposa.cpf,
+        diabetico_esposa: esposa.diabetico,
+        religiao_esposa: esposa.religiao,
+        celular_esposa: esposa.celular,
+
+        dt_casamento: casal.data_casamento,
+        endereco: casal.endereco,
+        bairro: casal.bairro,
+        cidade: casal.cidade,
+        emergencia_1: casal.contato_emergencia_nome1,
+        tel_emergencia_1: casal.contato_emergencia_telefone1,
+        emergencia_2: casal.contato_emergencia_nome2,
+        tel_emergencia_2: casal.contato_emergencia_telefone2,
+      });
+    });
+
+    const columns: ExportColumn[] = [
+      { key: 'casal', header: 'Casal', width: 30 },
+      { key: 'id_casal', header: 'id', width: 25 },
+      { key: 'nome_esposo', header: 'None Esposo', width: 50 },
+      { key: 'nome_completo_esposo', header: 'Nome Completo Esposo', width: 50 },
+      { key: 'email_esposo', header: 'E-mail Esposo', width: 18 },
+      { key: 'dn_esposo', header: 'Dt. Nascimento Esposo', width: 20 },
+      { key: 'profissao_esposo', header: 'Profissão Esposo', width: 30 },
+      { key: 'rg_esposo', header: 'Rg Esposo', width: 30 },
+      { key: 'orgao_emissor_esposo', header: 'Orgão Emissor Esposo', width: 30 },
+      { key: 'cpf_esposo', header: 'Cpf Esposo', width: 30 },
+      { key: 'diabetico_esposo', header: 'Diabetico Esposo', width: 30 },
+      { key: 'religiao_esposo', header: 'Religiao Esposo', width: 30 },
+      { key: 'celular_esposo', header: 'Celular Esposo', width: 30 },
+      { key: 'nome_esposa', header: 'None Esposa', width: 50 },
+      { key: 'nome_completo_esposa', header: 'Nome Completo Esposa', width: 50 },
+      { key: 'email_esposa', header: 'E-mail Esposa', width: 18 },
+      { key: 'dn_esposa', header: 'Dt. Nascimento Esposa', width: 20 },
+      { key: 'profissao_esposa', header: 'Profissão Esposa', width: 30 },
+      { key: 'rg_esposa', header: 'Rg Esposa', width: 30 },
+      { key: 'orgao_emissor_esposa', header: 'Orgão Emissor Esposa', width: 30 },
+      { key: 'cpf_esposa', header: 'Cpf Esposa', width: 30 },
+      { key: 'diabetico_esposa', header: 'Diabetico Esposa', width: 30 },
+      { key: 'religiao_esposa', header: 'Religiao Esposa', width: 30 },
+      { key: 'celular_esposa', header: 'Celular Esposa', width: 30 },
+
+      { key: 'dt_casamento', header: 'Dt. Casamento', width: 30 },
+      { key: 'endereco', header: 'Endereço', width: 30 },
+      { key: 'bairro', header: 'Bairro', width: 30 },
+      { key: 'cidade', header: 'Cidade', width: 30 },
+      { key: 'emergencia_1', header: 'Emergência 1', width: 30 },
+      { key: 'tel_emergencia_1', header: 'Celular 1', width: 30 },
+      { key: 'emergencia_2', header: 'Emergência 2', width: 30 },
+      { key: 'tel_emergencia_2', header: 'Celular 2', width: 30 },
+    ];
+
+    lista.sort((a, b) => a.casal.localeCompare(b.casal));
+    this.excelExportService.exportToExcel(lista, columns, { filename: 'Lista Geral', sheetName: 'Lista Geral', includeTimestamp: true });
   }
 
   formataCpf(valor: string) {
@@ -323,7 +411,7 @@ export class ListaInscricao implements OnInit {
       { key: 'cpf', header: 'CPF', width: 25 }
     ];
 
-    this.excelExportService.exportToExcel(novaRelacao, columns, {filename: 'Lista Passageiros'});
+    this.excelExportService.exportToExcel(novaRelacao, columns, { filename: 'Lista Passageiros' });
 
   }
   // ========== MÉTODOS DE EXPORTAÇÃO PARA EXCEL ==========
