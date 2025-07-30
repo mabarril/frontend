@@ -89,11 +89,14 @@
                         <button mat-icon-button (click)="copiarUrl(inscricao)" matTooltip="Copiar link de inscrição">
                             <mat-icon>link</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="editarCasal(inscricao.casal_id)">
+                        <button mat-icon-button (click)="editInscricao('5ms', '5ms', inscricao.id)">
                             <mat-icon>edit</mat-icon>
                         </button>
                         <button mat-icon-button style="color: red;" (click)="deleteInscricao(inscricao.id)">
                             <mat-icon>delete</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="editarCasal(inscricao.casal_id)">
+                            <mat-icon>person_edit</mat-icon>
                         </button>
                         <button mat-icon-button (click)="fichaPdf?.buscarCasalEExibirPDF(inscricao.casal_id)">
                             <mat-icon>picture_as_pdf</mat-icon>

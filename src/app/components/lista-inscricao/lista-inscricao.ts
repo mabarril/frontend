@@ -568,9 +568,57 @@ export class ListaInscricao implements OnInit {
     });
     this.utils.generatePdf(col, lista, 'Lista de Inscritos');
   }
+
+  editInscricao(enterAnimationDuration: string, exitAnimationDuration: string, inscricaoId: number) {
+    const dialogRef = this.dialog.open(DialogEditarInscricao, {
+      data: { casais: this.listaCasais, inscricaoId: inscricaoId },
+      width: '500px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.ngOnInit(); // Recarrega os dados após o fechamento do diálogo
+    });
+    }
 }
 
+
+
 // ========== COMPONENTES DE DIÁLOGO MANTIDOS ==========
+
+@Component({
+  selector: 'dialog-editar-inscricao',
+  templateUrl: 'dialog-editar-inscricao.html',
+  styleUrl: './lista-inscricao.scss',
+  imports: [MatButtonModule, CommonModule, MatDialogModule, MatCardModule, MatCheckboxModule, MatButtonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, ReactiveFormsModule, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DialogEditarInscricao {
+
+   constructor(
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar,
+    private urlsUnicasService: UrlsUnicasService,
+    private inscricoesService: InscricoesService,
+    private eventosService: EventosService
+  ) {
+    this.editForm = this.fb.group({
+      casal_id: ['', Validators.required],
+      padrinho_id: [''], // Campo para selecionar o padrinho
+      quarto: ['']
+    });
+  }
+
+  readonly dialogRef = inject(MatDialogRef<DialogEditarInscricao>);
+  editForm: FormGroup;
+  readonly data = inject<{ casais: any[], inscricaoId: number }>(MAT_DIALOG_DATA);
+  readonly listaCasais = this.data.casais;
+  readonly inscricao = this.data.inscricaoId;
+  readonly editFormControl = new FormControl(false);
+
+}
+
+
 
 @Component({
   selector: 'dialog-inscricao',
