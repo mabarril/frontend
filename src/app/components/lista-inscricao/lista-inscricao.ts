@@ -254,7 +254,39 @@ export class ListaInscricao implements OnInit {
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
-    this.excelExportService.exportToExcel(listaSeguro, columns);
+    this.excelExportService.exportToExcel(listaSeguro, columns, {filename: 'Lista Seguro', includeTimestamp: true });
+  }
+
+  listaSeguroGeral() {
+    let listaSeguro: any[] = [];
+    this.relacaoCasais.map(participante => {
+      const esposo = participante.pessoas.find((p: any) => p.tipo === 'esposo')?.nome_social;
+      const esposa = participante.pessoas.find((p: any) => p.tipo === 'esposa')?.nome_social;
+      participante.pessoas.map((pessoa: any) => {
+        listaSeguro.push({
+          nome: pessoa.nome_completo,
+          cpf: pessoa.cpf ? this.formataCpf(pessoa.cpf) : pessoa.cpf,
+          data_nascimento: this.utils.formatarData(pessoa.data_nascimento),
+          rg: pessoa.rg,
+          orgao_emissor: pessoa.rg_emissor,
+          sexo: pessoa.tipo === "esposo" ? "Masculino" : "Feminino",
+          casal: pessoa.tipo === "esposo" ? esposo + ' da ' + esposa : esposa + ' do ' + esposo,
+        });
+      });
+    });
+
+    const columns: ExportColumn[] = [
+      { key: 'nome', header: 'Nome', width: 30 },
+      { key: 'cpf', header: 'CPF', width: 25 },
+      { key: 'data_nascimento', header: 'Dt. Nascimento', width: 20 },
+      { key: 'rg', header: 'Identidade', width: 18 },
+      { key: 'orgao_emissor', header: 'Orgão Emissor', width: 18 },
+      { key: 'sexo', header: 'Sexo', width: 20 },
+      { key: 'casal', header: 'Casal', width: 30 }
+    ];
+
+    listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
+    this.excelExportService.exportToExcel(listaSeguro, columns, {filename: 'Lista Seguro Geral', includeTimestamp: true });
   }
 
   listaGeral() {
