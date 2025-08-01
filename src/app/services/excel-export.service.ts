@@ -172,6 +172,11 @@ export class ExcelExportService {
         width: 35 
       },
       { 
+        key: 'quarto', 
+        header: 'Quarto', 
+        width: 35 
+      },
+      { 
         key: 'tipo_participante', 
         header: 'Tipo de Participante', 
         width: 20,
@@ -220,7 +225,7 @@ export class ExcelExportService {
       sheetName: 'Lista de Inscritos',
       includeTimestamp: true
     };
-
+    console.log('li ', listaInscritos)
     this.exportToExcel(listaInscritos, columns, options);
   }
 

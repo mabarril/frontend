@@ -25,6 +25,8 @@ import { Utils } from '../../services/utils';
 import { ExcelExportService } from '../../services/excel-export.service';
 import { ListaFilhos } from '../lista-filhos/lista-filhos';
 import { jsPDF } from 'jspdf';
+import { Registro } from '../../models/registro.model';
+import { BinaryOperator, TemplateLiteral } from '@angular/compiler';
 
 interface Casal {
   id: number;
@@ -54,6 +56,7 @@ interface Inscricao {
   status: string;
   data_inscricao: string;
   tipo_participante: string;
+  quarto: string;
   padrinho_id?: number; // Campo opcional para o padrinho
 }
 
@@ -94,7 +97,8 @@ export class ListaInscricao implements OnInit {
   private destroy$ = new Subject<void>();
   utils = Utils;
   relacaoCasais: any[] = [];
-  listaFilho = ListaFilhos;
+  relacaoFilhos: any[] = [];
+
 
   constructor(
     private casaisService: CasaisService,
@@ -126,6 +130,7 @@ export class ListaInscricao implements OnInit {
       eventos: this.eventosService.getEventos()
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: ({ casais, eventos }) => {
+        console.log('Casais:', casais);
         this.carregaListaCasais(casais);
         this.eventos = (eventos as Evento[] || []).sort((a: Evento, b: Evento) => b.id - a.id);
         this.loading = false;
@@ -168,7 +173,9 @@ export class ListaInscricao implements OnInit {
     if (!eventoId) return;
     this.inscricoesService.getInscricoesDoEvento(eventoId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: any) => {
+
         this.inscricoes = response || [];
+        console.log('resp ', response);
         this.listaInscritos = this.inscricoes.map(inscricao => {
           const casal = this.casaisMap.get(inscricao.casal_id);
           return {
@@ -180,11 +187,12 @@ export class ListaInscricao implements OnInit {
             tipo_participante: inscricao.tipo_participante,
             padrinho_id: inscricao.padrinho_id,
             casal: casal,
+            quarto: inscricao.quarto
           };
         });
         this.listaInscritos.sort((a, b) => a.casal.nome.localeCompare(b.casal.nome));
         this.listaInscritosOriginal = [...this.listaInscritos];
-        console.log('Lista de inscritos:', this.listaInscritos);
+        this.carregarListaFilhos(this.listaInscritosOriginal);
       },
       error: (error: HttpErrorResponse) => {
         console.error('Erro ao carregar inscrições:', error);
@@ -254,7 +262,7 @@ export class ListaInscricao implements OnInit {
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
-    this.excelExportService.exportToExcel(listaSeguro, columns, {filename: 'Lista Seguro', includeTimestamp: true });
+    this.excelExportService.exportToExcel(listaSeguro, columns, { filename: 'Lista Seguro', includeTimestamp: true });
   }
 
   listaSeguroGeral() {
@@ -286,13 +294,103 @@ export class ListaInscricao implements OnInit {
     ];
 
     listaSeguro.sort((a, b) => a.nome.localeCompare(b.nome));
-    this.excelExportService.exportToExcel(listaSeguro, columns, {filename: 'Lista Seguro Geral', includeTimestamp: true });
+    this.excelExportService.exportToExcel(listaSeguro, columns, { filename: 'Lista Seguro Geral', includeTimestamp: true });
+  }
+
+  listaInscritosParaExcel() {
+    let lista: any[] = [];
+    let padrinho: any;
+    this.listaInscritos.map(casal => {
+      padrinho = '';
+      const esposo = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo');
+      const esposa = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa');
+      if (casal.tipo_participante === "convidado") {
+        padrinho = this.listaInscritosOriginal.find((p: any) => p.casal_id === casal.padrinho_id)?.casal.nome;
+      }
+      lista.push({
+        id: casal.id,
+        casal: esposo.nome_social + ' e ' + esposa.nome_social,
+        quarto: casal.quarto,
+        padrinho: padrinho ? padrinho : '',
+        nome_esposo: esposo.nome_social,
+        nome_completo_esposo: esposo.nome_completo,
+        email_esposo: esposo.email_contato,
+        dn_esposo: esposo.data_nascimento ? this.utils.formatarData(esposo.data_nascimento) : null,
+        profissao_esposo: esposo.profissao,
+        rg_esposo: esposo.rg,
+        orgao_emissor_esposo: esposo.rg_emissor,
+        cpf_esposo: esposo.cpf ? this.formataCpf(esposo.cpf) : esposo.cpf,
+        diabetico_esposo: esposo.diabetico,
+        religiao_esposo: esposo.religiao,
+        celular_esposo: esposo.celular,
+
+        nome_esposa: esposa.nome_social,
+        nome_completo_esposa: esposa.nome_completo,
+        email_esposa: esposa.email_contato,
+        dn_esposa: esposa.data_nascimento ? this.utils.formatarData(esposa.data_nascimento) : null,
+        profissao_esposa: esposa.profissao,
+        rg_esposa: esposa.rg,
+        orgao_emissor_esposa: esposa.rg_emissor,
+        cpf_esposa: esposa.cpf ? this.formataCpf(esposa.cpf) : esposa.cpf,
+        diabetico_esposa: esposa.diabetico,
+        religiao_esposa: esposa.religiao,
+        celular_esposa: esposa.celular,
+
+        dt_casamento: casal.casal.dados.data_casamento ? this.utils.formatarData(casal.casal.dados.data_casamento) : null,
+        endereco: casal.casal.dados.endereco,
+        bairro: casal.casal.dados.bairro,
+        cidade: casal.casal.dados.cidade,
+        emergencia_1: casal.casal.dados.contato_emergencia_nome1,
+        tel_emergencia_1: casal.casal.dados.contato_emergencia_telefone1,
+        emergencia_2: casal.casal.dados.contato_emergencia_nome2,
+        tel_emergencia_2: casal.casal.dados.contato_emergencia_telefone2,
+      });
+    });
+
+    const columns: ExportColumn[] = [
+      { key: 'id', header: 'Código Inscrição' },
+      { key: 'casal', header: 'Casal' },
+      { key: 'padrinho', header: 'Padrinho' },
+      { key: 'quarto', header: 'Quarto' },
+      { key: 'nome_esposo', header: 'None Esposo' },
+      { key: 'nome_completo_esposo', header: 'Nome Completo Esposo' },
+      { key: 'email_esposo', header: 'E-mail Esposo' },
+      { key: 'dn_esposo', header: 'Dt. Nascimento Esposo' },
+      { key: 'profissao_esposo', header: 'Profissão Esposo' },
+      { key: 'rg_esposo', header: 'Rg Esposo' },
+      { key: 'orgao_emissor_esposo', header: 'Orgão Emissor Esposo' },
+      { key: 'cpf_esposo', header: 'Cpf Esposo' },
+      { key: 'diabetico_esposo', header: 'Diabetico Esposo' },
+      { key: 'religiao_esposo', header: 'Religiao Esposo' },
+      { key: 'celular_esposo', header: 'Celular Esposo' },
+      { key: 'nome_esposa', header: 'None Esposa' },
+      { key: 'nome_completo_esposa', header: 'Nome Completo Esposa' },
+      { key: 'email_esposa', header: 'E-mail Esposa' },
+      { key: 'dn_esposa', header: 'Dt. Nascimento Esposa' },
+      { key: 'profissao_esposa', header: 'Profissão Esposa' },
+      { key: 'rg_esposa', header: 'Rg Esposa' },
+      { key: 'orgao_emissor_esposa', header: 'Orgão Emissor Esposa' },
+      { key: 'cpf_esposa', header: 'Cpf Esposa' },
+      { key: 'diabetico_esposa', header: 'Diabetico Esposa' },
+      { key: 'religiao_esposa', header: 'Religiao Esposa' },
+      { key: 'celular_esposa', header: 'Celular Esposa' },
+      { key: 'dt_casamento', header: 'Dt. Casamento' },
+      { key: 'endereco', header: 'Endereço' },
+      { key: 'bairro', header: 'Bairro' },
+      { key: 'cidade', header: 'Cidade' },
+      { key: 'emergencia_1', header: 'Emergência 1' },
+      { key: 'tel_emergencia_1', header: 'Celular 1' },
+      { key: 'emergencia_2', header: 'Emergência 2' },
+      { key: 'tel_emergencia_2', header: 'Celular 2' },
+    ];
+
+    lista.sort((a, b) => a.casal.localeCompare(b.casal));
+    this.excelExportService.exportToExcel(lista, columns, { filename: 'Lista Geral', sheetName: 'Lista Geral', includeTimestamp: true });
   }
 
   listaGeral() {
     let lista: any[] = [];
     this.relacaoCasais.map(casal => {
-      console.log(casal);
       const esposo = casal.pessoas.find((p: any) => p.tipo === 'esposo');
       const esposa = casal.pessoas.find((p: any) => p.tipo === 'esposa');
       lista.push({
@@ -306,7 +404,7 @@ export class ListaInscricao implements OnInit {
         profissao_esposo: esposo.profissao,
         rg_esposo: esposo.rg,
         orgao_emissor_esposo: esposo.rg_emissor,
-        cpf_esposo: esposo.cpf? this.formataCpf(esposo.cpf) :esposo.cpf,
+        cpf_esposo: esposo.cpf ? this.formataCpf(esposo.cpf) : esposo.cpf,
         diabetico_esposo: esposo.diabetico,
         religiao_esposo: esposo.religiao,
         celular_esposo: esposo.celular,
@@ -318,7 +416,7 @@ export class ListaInscricao implements OnInit {
         profissao_esposa: esposa.profissao,
         rg_esposa: esposa.rg,
         orgao_emissor_esposa: esposa.rg_emissor,
-        cpf_esposa: esposa.cpf? this.formataCpf(esposa.cpf) : esposa.cpf,
+        cpf_esposa: esposa.cpf ? this.formataCpf(esposa.cpf) : esposa.cpf,
         diabetico_esposa: esposa.diabetico,
         religiao_esposa: esposa.religiao,
         celular_esposa: esposa.celular,
@@ -446,6 +544,208 @@ export class ListaInscricao implements OnInit {
     this.excelExportService.exportToExcel(novaRelacao, columns, { filename: 'Lista Passageiros' });
 
   }
+
+
+  relacaoHotel() {
+    let novaRelacao: any[] = [];
+    console.log('lista ', this.listaInscritos);
+    this.listaInscritos.forEach((casal: any) => {
+      const esposo = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo');
+      const esposa = casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa');
+      let reg = {
+        esposo_nome: esposo.nome_completo,
+        esposo_rg: esposo.rg,
+        esposo_orgao: esposo.rg_emissor,
+        esposo_cpf: esposo.cpf ? this.formataCpf(esposo.cpf) : "",
+        esposa_nome: esposa.nome_completo,
+        esposa_rg: esposa.rg,
+        esposa_orgao: esposa.rg_emissor,
+        esposa_cpf: esposa.cpf ? this.formataCpf(esposa.cpf) : "",
+        quarto: casal.quarto,
+      }
+      novaRelacao.push(reg);
+    });
+
+    novaRelacao.sort((a, b) => a.esposo_nome.localeCompare(b.esposo_nome));
+
+    let pdf = new jsPDF();
+    pdf.rect(15, 10, 180, 15); // empty square
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text(`ENCONTRO DE CASAIS COM CRISTO (ECC)`, 105, 15, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(12);
+    pdf.text(`Relacao de Quartos Afilhados`, 105, 22, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    let linha = 30;
+    pdf.text('Nome Esposo', 20, linha);
+    pdf.text('Nome Esposa', 100, linha);
+    pdf.text('Quarto', 160, linha);
+    linha += 3;
+    pdf.text('RG', 20, linha);
+    pdf.text('RG', 100, linha);
+    pdf.text('CPF', 60, linha);
+    pdf.text('CPF', 140, linha);
+    linha += 1;
+    pdf.setLineWidth(0.1);
+    pdf.line(20, linha, 180, linha);
+    pdf.setFont('helvetica', 'normal');
+    let page = 1;
+    for (const item of novaRelacao) {
+      linha += 5;
+      pdf.text(item.esposo_nome, 20, linha);
+      pdf.text(item.esposa_nome, 100, linha);
+      pdf.text(item.quarto, 160, linha);
+      linha += 5;
+      pdf.text(item.esposo_rg, 20, linha);
+      pdf.text(item.esposa_rg, 100, linha);
+      pdf.text(item.esposo_orgao, 40, linha);
+      pdf.text(item.esposa_orgao, 120, linha);
+      pdf.text(item.esposo_cpf, 60, linha);
+      pdf.text(item.esposa_cpf, 140, linha);
+      if (linha > 260) {
+        pdf.text('Página ' + page, 180, 285, { align: 'right' });
+        page++;
+        pdf.addPage();
+        pdf.rect(15, 10, 180, 15); // empty square
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.text(`ENCONTRO DE CASAIS COM CRISTO (ECC)`, 105, 15, { align: 'center' });
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        pdf.text(`Relacao de Quartos Afilhados`, 105, 22, { align: 'center' });
+        pdf.setFontSize(8);
+        linha = 30;
+      } 
+      pdf.text('Página ' + page, 180, 285, { align: 'right' });
+    }
+    pdf.save('RelacaoHotel.pdf');
+  }
+
+  relacaoQuartoAfilhados() {
+    let novaRelacao: any[] = [];
+    this.listaInscritos.forEach((casal: any) => {
+      // A interface Pessoa é uma suposição, ajuste se o tipo for outro.
+      if (casal.tipo_participante === "convidado") {
+        let reg = {
+          nome: casal.casal.nome,
+          quarto: casal.quarto,
+          padrinho: casal.padrinho_id ? this.listaInscritosOriginal.find((p: any) => p.casal_id === casal.padrinho_id)?.casal.nome : '',
+          quarto_padrinho: casal.padrinho_id ? this.listaInscritosOriginal.find((p: any) => p.casal_id === casal.padrinho_id)?.quarto : '',
+        }
+        novaRelacao.push(reg);
+      }
+
+    });
+
+    novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const col = ['nome', 'quarto', 'padrinho', 'quarto_padrinho'];
+    novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+    this.utils.generatePdf(col, novaRelacao, 'Relação de Quarto Afilhados');
+  }
+
+  
+  relacaoRecepcao() {
+    let novaRelacao: any[] = [];
+    this.listaInscritos.forEach((casal: any) => {
+      // A interface Pessoa é uma suposição, ajuste se o tipo for outro.
+      if (casal.tipo_participante === "convidado") {
+        let padrinho = this.listaInscritosOriginal.find((p: any) => p.casal_id === casal.padrinho_id);
+        let reg = {
+          nome: casal.casal.nome,
+          quarto: casal.quarto,
+          endereco: casal.casal.dados.endereco,
+          bairro: casal.casal.dados.bairro,
+          cidade: casal.casal.dados.cidade,
+          telefoneEsposo: casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo')?.celular || '',
+          telefoneEsposa: casal.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa')?.celular || '',
+          padrinho: padrinho ? padrinho.casal.nome : '',
+          telefonePadrinho: padrinho.casal.dados.pessoas.find((p: any) => p.tipo === 'esposo')?.celular,
+          telefoneMadrinha: padrinho.casal.dados.pessoas.find((p: any) => p.tipo === 'esposa')?.celular,
+        }
+        novaRelacao.push(reg);
+      }
+
+    });
+
+    
+
+    novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+
+     let pdf = new jsPDF("landscape");
+    // pdf.rect(15, 5, 250, 15); // empty square
+    // pdf.setFont('helvetica', 'bold');
+    // pdf.setFontSize(14);
+    // pdf.text(`ENCONTRO DE CASAIS COM CRISTO (ECC)`, 120, 15, { align: 'center' });
+    // pdf.setFont('helvetica', 'normal');
+    // pdf.setFontSize(12);
+    pdf.text(`Relação Afilhados e Padrinhos - Recepção`, 150, 5, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    let linha = 10;
+    pdf.text('Afilhado', 20, linha);
+    pdf.text('Quarto', 55, linha);
+    pdf.text('Endereco', 65, linha);
+    pdf.text('Bairro', 170, linha);
+    pdf.text('Cidade', 200, linha);
+    pdf.text('Tel.Esposo', 220, linha);
+    pdf.text('Tel. Esposa', 250, linha);
+    linha += 3;
+    pdf.text('Padrinhos: ', 20, linha);
+    pdf.text('Tel. Padrinho', 55, linha);
+    pdf.text('Tel. Madrinha', 85, linha);
+    // linha += 1;
+    // pdf.setLineWidth(0.1);
+    // pdf.line(20, linha, 180, linha);
+
+    pdf.setFont('helvetica', 'normal');
+    let page = 1;
+    let row = true;
+    for (const item of novaRelacao) {
+      linha += 5;
+      if (row) {
+        pdf.setFillColor("#cecfd6"); // Light gray background
+        pdf.rect(15, linha - 3.5, 270, 8, 'F'); // Fill rectangle
+        row = false;
+      } else {
+        row = true;
+      }
+      pdf.text(item.nome, 20, linha);
+      pdf.text(item.quarto, 55, linha);
+      pdf.text(item.endereco, 65, linha);
+      pdf.text(item.bairro, 170, linha);
+      pdf.text(item.cidade, 200, linha);
+      pdf.text(item.telefoneEsposo? this.utils.formataCelular(item.telefoneEsposo) : '', 220, linha);
+      pdf.text(item.telefoneEsposa? this.utils.formataCelular(item.telefoneEsposa) : '', 250, linha);
+      linha += 3;
+      pdf.text(item.padrinho, 20, linha);
+      pdf.text(item.telefonePadrinho? this.utils.formataCelular(item.telefonePadrinho) : '', 55, linha);
+      pdf.text(item.telefoneMadrinha? this.utils.formataCelular(item.telefoneMadrinha) : '', 85, linha);
+      if (linha > 260) {
+        pdf.text('Página ' + page, 180, 285, { align: 'right' });
+        page++;
+        pdf.addPage();
+        pdf.rect(15, 10, 180, 15); // empty square
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.text(`ENCONTRO DE CASAIS COM CRISTO (ECC)`, 105, 15, { align: 'center' });
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        pdf.text(`Relacao de Quartos Afilhados`, 105, 22, { align: 'center' });
+        pdf.setFontSize(8);
+        linha = 30;
+      } 
+      pdf.text('Página ' + page, 180, 285, { align: 'right' });
+    }
+    pdf.save('Recepção.pdf');
+
+    // const col = ['nome', 'quarto', 'endereco', 'telefoneEsposo', 'telefoneEsposa', 'telefonePadrinho', 'telefoneMadrinha'];
+    // novaRelacao.sort((a, b) => a.nome.localeCompare(b.nome));
+    // this.utils.generatePdf(col, novaRelacao, 'Relação Recepção');
+  }
+
   // ========== MÉTODOS DE EXPORTAÇÃO PARA EXCEL ==========
 
   /**
@@ -459,6 +759,7 @@ export class ListaInscricao implements OnInit {
       }
 
       const nomeEvento = this.getNomeEventoSelecionado();
+      console.log('inc ', this.listaInscritos);
       this.excelExportService.exportListaInscritos(this.listaInscritos, nomeEvento);
 
       this.snackBar.open('Lista de inscritos exportada com sucesso!', 'Fechar', {
@@ -592,33 +893,43 @@ export class ListaInscricao implements OnInit {
     this.utils.generatePdf(col, listaAfilhados, 'Lista Afilhados');
   }
 
-  listarFilhos() {
-    let relacaoFilhos: any[] = [];
-    let listaAfilhados = this.listaInscritos.filter(inscricao => inscricao.tipo_participante === 'convidado');
-    listaAfilhados.forEach(afilhado => {
-      this.casaisService.getCasaisById(afilhado.casal_id).subscribe({
-        next: (casal: any) => {
-          if (casal && casal.filhos && casal.filhos.length > 0) {
-            let filhos: { nome_completo: any; data_nascimento: any; }[] = [];
-            casal.filhos.forEach((filho: any) => {
-              filhos.push({
-                nome_completo: filho.nome_completo.toUpperCase(),
-                data_nascimento: this.utils.formatarData(filho.data_nascimento),
+
+
+
+  carregarListaFilhos(inscritos: any[]) {
+    this.relacaoFilhos = [];
+    inscritos.forEach((casal: any) => {
+      // A interface Pessoa é uma suposição, ajuste se o tipo for outro.
+      if (casal.tipo_participante === "convidado") {
+        console.log(casal);
+        this.casaisService.getCasaisById(casal.casal_id).subscribe({
+          next: (response: any) => {
+            if (response.filhos?.length > 0) {
+              response.filhos?.forEach((filho: any) => {
+                this.relacaoFilhos.push({
+                  nome: casal.casal.nome,
+                  nome_filho: filho.nome_completo,
+                  data_nascimento: filho.data_nascimento
+                });
               });
-            });
-            let reg = {
-              nome: afilhado.casal.nome,
-              filhos: [...filhos]
-            };
-            relacaoFilhos.push(reg);
+            }
           }
-        },
-        error: () => {
-          console.error('Erro ao buscar dados do filho');
-        }
-      });
-    })
-    this.listaFilho.gerarPDF(relacaoFilhos);
+        });
+      }
+    });
+  }
+
+  gerarListagemFilhos() {
+
+    this.relacaoFilhos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const columns: ExportColumn[] = [
+      { key: 'nome', header: 'Casal', width: 30 },
+      { key: 'nome_filho', header: 'Filho', width: 30 },
+      { key: 'data_nascimento', header: 'Dt. Nascimento', width: 30 },
+    ];
+
+    this.excelExportService.exportToExcel(this.relacaoFilhos, columns, { filename: 'Filhos ', includeTimestamp: true });
   }
 
   openDialogInscricao(enterAnimationDuration: string, exitAnimationDuration: string): void {

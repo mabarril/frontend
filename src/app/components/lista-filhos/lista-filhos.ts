@@ -12,16 +12,19 @@ export class ListaFilhos {
   static gerarPDF(filhos: any[]) {
     const doc = new jsPDF();
 
+
     let positionY = 50;
 
     doc.setFontSize(12);
     doc.text('Teste', 50, positionY);
-
+    filhos.sort((a, b) => a.nome.localeCompare(b.nome));
     positionY += 10;
+    console.log(filhos);
 
-    for (const pais of filhos) {
-      // doc.text(filhos.nome, 50, positionY +=10);
+    for (const item of filhos) {
+      doc.text(item.nome, 20, positionY += 5);
     }
+
     
     
 

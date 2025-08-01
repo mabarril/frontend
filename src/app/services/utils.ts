@@ -9,6 +9,19 @@ export class Utils {
         return `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato DD/MM/AAAA
     }
 
+    static formataCelular(celular: string) {
+        if (!celular) return '';
+        // Remove caracteres não numéricos
+        celular = celular.replace(/\D/g, '');
+        // Formata o celular
+        if (celular.length === 11) {
+            return `(${celular.slice(0, 2)}) ${celular.slice(2, 7)}-${celular.slice(7)}`;
+        } else if (celular.length === 10) {
+            return `(${celular.slice(0, 2)}) ${celular.slice(2, 6)}-${celular.slice(6)}`;
+        }
+        return celular; // Retorna o celular original se não tiver o tamanho esperado
+    }
+
 
     static generatePdf(colunas: string[], dados: any[], titulo: string) {
         const doc = new jsPDF();
