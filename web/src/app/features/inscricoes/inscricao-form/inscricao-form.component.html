@@ -1,0 +1,71 @@
+<div class="container">
+    <h1>{{ isEditMode ? 'Editar Inscrição' : 'Nova Inscrição' }}</h1>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-card>
+            <mat-card-content>
+                <div class="form-container">
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Evento</mat-label>
+                            <mat-select formControlName="evento_id">
+                                <mat-option *ngFor="let evento of eventos" [value]="evento.id">
+                                    {{ evento.nome }} ({{ evento.data_inicio | date:'dd/MM/yyyy' }})
+                                </mat-option>
+                            </mat-select>
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Buscar Casal</mat-label>
+                            <input type="text" placeholder="Digite o nome do esposo ou esposa" matInput
+                                [formControl]="casalControl" [matAutocomplete]="auto">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCasal">
+                                <mat-option *ngFor="let casal of filteredCasais | async" [value]="casal">
+                                    {{ displayCasal(casal) }}
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-error
+                                *ngIf="casalControl.errors?.['required'] || form.get('casal_id')?.errors?.['required']">
+                                Selecione um casal da lista
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Tipo de Participação</mat-label>
+                            <mat-select formControlName="tipo_participante">
+                                <mat-option value="convidado">Convidado</mat-option>
+                                <mat-option value="encontrista">Encontrista (Trabalho)</mat-option>
+                            </mat-select>
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Observações</mat-label>
+                            <textarea matInput formControlName="observacoes" rows="3"></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row" *ngIf="!isEditMode">
+                        <mat-checkbox formControlName="gerar_url">Gerar URL de convite automaticamente</mat-checkbox>
+                    </div>
+
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <div class="actions">
+            <button mat-button type="button" routerLink="/inscricoes">Cancelar</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isLoading">
+                {{ isEditMode ? 'Salvar Inscrição' : 'Realizar Inscrição' }}
+            </button>
+        </div>
+    </form>
+</div>

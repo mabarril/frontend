@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "http://eccbsb.kinghost.net:21000/api/",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  }
+}

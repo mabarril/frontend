@@ -1,0 +1,232 @@
+<div class="container">
+    <h1>{{ isEditMode ? 'Editar Casal' : 'Novo Casal' }}</h1>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-tab-group animationDuration="0ms">
+
+            <!-- TAB 1: CASAL -->
+            <mat-tab label="Dados do Casal">
+                <div class="form-section form-container" formGroupName="casal">
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data de Casamento</mat-label>
+                            <input matInput [matDatepicker]="pickerCasamento" formControlName="data_casamento">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerCasamento"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerCasamento></mat-datepicker>
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Endereço</mat-label>
+                            <input matInput formControlName="endereco" placeholder="Rua, Número, Complemento">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Bairro</mat-label>
+                            <input matInput formControlName="bairro">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Cidade</mat-label>
+                            <input matInput formControlName="cidade">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>CEP</mat-label>
+                            <input matInput formControlName="cep">
+                        </mat-form-field>
+                    </div>
+
+                    <h3>Contatos de Emergência</h3>
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Nome Contato 1</mat-label>
+                            <input matInput formControlName="contato_emergencia_nome1">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Telefone Contato 1</mat-label>
+                            <input matInput formControlName="contato_emergencia_telefone1">
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- TAB 2: ESPOSO -->
+            <mat-tab label="Esposo">
+                <div class="form-section form-container" formGroupName="esposo">
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Nome Completo</mat-label>
+                            <input matInput formControlName="nome_completo">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Apelido / Nome Social</mat-label>
+                            <input matInput formControlName="nome_social">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data de Nascimento</mat-label>
+                            <input matInput [matDatepicker]="pickerEsposo" formControlName="data_nascimento">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerEsposo"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerEsposo></mat-datepicker>
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Celular</mat-label>
+                            <input matInput formControlName="celular">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Profissão</mat-label>
+                            <input matInput formControlName="profissao">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Religião</mat-label>
+                            <mat-select formControlName="religiao">
+                                <mat-option value="católica">Católica</mat-option>
+                                <mat-option value="evangélica">Evangélica</mat-option>
+                                <mat-option value="espírita">Espírita</mat-option>
+                                <mat-option value="outra">Outra</mat-option>
+                                <mat-option value="sem religião">Sem religião</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-checkbox formControlName="diabetico">Diabético</mat-checkbox>
+                        <!-- More health checks can vary -->
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- TAB 3: ESPOSA -->
+            <mat-tab label="Esposa">
+                <div class="form-section form-container" formGroupName="esposa">
+                    <!-- Same fields as Esposo -->
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Nome Completo</mat-label>
+                            <input matInput formControlName="nome_completo">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Apelido / Nome Social</mat-label>
+                            <input matInput formControlName="nome_social">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data de Nascimento</mat-label>
+                            <input matInput [matDatepicker]="pickerEsposa" formControlName="data_nascimento">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerEsposa"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerEsposa></mat-datepicker>
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Celular</mat-label>
+                            <input matInput formControlName="celular">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Profissão</mat-label>
+                            <input matInput formControlName="profissao">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Religião</mat-label>
+                            <mat-select formControlName="religiao">
+                                <mat-option value="católica">Católica</mat-option>
+                                <mat-option value="evangélica">Evangélica</mat-option>
+                                <mat-option value="outra">Outra</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="row">
+                        <mat-checkbox formControlName="diabetico">Diabético</mat-checkbox>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- TAB 4: FILHOS -->
+            <mat-tab label="Filhos">
+                <div class="form-section form-container">
+                    <div formArrayName="filhos">
+                        <div *ngFor="let filho of filhosArray.controls; let i = index" [formGroupName]="i"
+                            class="child-row">
+                            <mat-form-field appearance="outline" class="col">
+                                <mat-label>Nome do Filho</mat-label>
+                                <input matInput formControlName="nome_completo">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="col">
+                                <mat-label>Data Nascimento</mat-label>
+                                <input matInput [matDatepicker]="pickerFilho" formControlName="data_nascimento">
+                                <mat-datepicker-toggle matIconSuffix [for]="pickerFilho"></mat-datepicker-toggle>
+                                <mat-datepicker #pickerFilho></mat-datepicker>
+                            </mat-form-field>
+
+                            <button mat-icon-button color="warn" type="button" (click)="removeFilho(i)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <button mat-stroked-button color="primary" type="button" (click)="addFilho()">
+                        <mat-icon>add</mat-icon> Adicionar Filho
+                    </button>
+                </div>
+
+                <div class="form-section form-container" style="margin-top: 10px;" formGroupName="casal">
+                    <h4>Responsável pelos filhos durante o encontro</h4>
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Nome Responsável</mat-label>
+                            <input matInput formControlName="responsavel_filhos_nome">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Telefone Responsável</mat-label>
+                            <input matInput formControlName="responsavel_filhos_telefone">
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+
+        <div class="actions">
+            <button mat-button type="button" routerLink="/casais">Cancelar</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isLoading">
+                {{ isEditMode ? 'Salvar Alterações' : 'Cadastrar Casal' }}
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,88 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Estilos globais para o aplicativo */
+html, body { 
+  height: 100%; 
+  margin: 0;
+}
+
+body { 
+  font-family: Roboto, "Helvetica Neue", sans-serif; 
+  background-color: #f5f5f5;
+  color: #333333;
+}
+
+/* Tema personalizado com cores sóbrias */
+:root {
+  --primary-color: #3f51b5;
+  --accent-color: #ff4081;
+  --warn-color: #f44336;
+  --background-color: #f5f5f5;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --secondary-text: #666666;
+  --border-color: #e0e0e0;
+}
+
+/* Estilos para containers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Estilos para formulários */
+.form-container {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* Estilos para botões */
+.mat-button, .mat-raised-button {
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Estilos para responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .form-container {
+    padding: 15px;
+  }
+}
+
+/* Estilos para mensagens de erro e sucesso */
+.error-message {
+  color: var(--warn-color);
+  margin: 10px 0;
+}
+
+.success-message {
+  color: #4caf50;
+  margin: 10px 0;
+}
+
+/* Estilos para campos obrigatórios */
+.mat-form-field-required-marker {
+  color: var(--warn-color);
+}
+
+/* Estilos para seções do formulário */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section-title {
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -1,0 +1,98 @@
+<div class="container">
+    <h1>{{ isEditMode ? 'Editar Evento' : 'Novo Evento' }}</h1>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-card>
+            <mat-card-content>
+                <div class="form-container" formGroupName="evento">
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Nome do Evento</mat-label>
+                            <input matInput formControlName="nome">
+                            <mat-error>Obrigatório</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data Início</mat-label>
+                            <input matInput [matDatepicker]="pickerInicio" formControlName="data_inicio">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerInicio></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data Fim</mat-label>
+                            <input matInput [matDatepicker]="pickerFim" formControlName="data_fim">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerFim></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col full-width">
+                            <mat-label>Local</mat-label>
+                            <input matInput formControlName="local">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Capacidade Máxima</mat-label>
+                            <input matInput type="number" formControlName="capacidade_maxima">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Status</mat-label>
+                            <mat-select formControlName="status">
+                                <mat-option value="planejado">Planejado</mat-option>
+                                <mat-option value="inscricoes_abertas">Inscrições Abertas</mat-option>
+                                <mat-option value="em_andamento">Em Andamento</mat-option>
+                                <mat-option value="concluido">Concluído</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card style="margin-top: 20px;">
+            <mat-card-header>
+                <mat-card-title>Regras de Devolução</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div formArrayName="regras_devolucao" style="margin-top: 15px;">
+                    <div *ngFor="let regra of regrasArray.controls; let i = index" [formGroupName]="i" class="rule-row">
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>Data Limite</mat-label>
+                            <input matInput [matDatepicker]="pickerRegra" formControlName="data_limite">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerRegra"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerRegra></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="col">
+                            <mat-label>% Devolução</mat-label>
+                            <input matInput type="number" formControlName="percentual_devolucao" min="0" max="100">
+                            <span matTextSuffix>%</span>
+                        </mat-form-field>
+
+                        <button mat-icon-button (click)="removeRegra(i)" type="button" class="delete-btn">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+
+                    <button mat-stroked-button color="primary" type="button" (click)="addRegra()">
+                        <mat-icon>add</mat-icon> Adicionar Regra
+                    </button>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <div class="actions">
+            <button mat-button type="button" routerLink="/eventos">Cancelar</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isLoading">
+                {{ isEditMode ? 'Salvar Alterações' : 'Salvar Evento' }}
+            </button>
+        </div>
+    </form>
+</div>
